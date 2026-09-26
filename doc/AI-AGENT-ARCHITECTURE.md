@@ -6,34 +6,34 @@ Before starting or continuing any work, read README.md, CONTEXT.md, PLAN.md, AI-
 **Product:** Career / LinkedIn / Social Platform  
 **Stack:** Next.js + TypeScript + Tailwind + Go + PostgreSQL + Redis + Meilisearch  
 **Document version:** 1.0 • **Prepared:** 2026-09-17  
-**Status:** Implementation specification — এই document application code বা deployment নয়।
+**Status:** Implementation specification — this document is an architectural specification, not application code or a live deployment.
 
-> **মূল সিদ্ধান্ত:** একটি shared Go AI Gateway থাকবে। Dashboard থেকে provider connection, API credential, model এবং task-wise budget configure করা যাবে। সাধারণ কাজ deterministic services করবে; reasoning বা writing দরকার হলেই ছোট, bounded AI request যাবে। ছয়টি logical agent মানে ছয়টি server, ছয়টি model বা ছয়টি simultaneous call নয়।
+> **Core Decision:** A shared Go AI Gateway will be implemented. Provider connections, API credentials, models, and task-wise budgets can be configured from the Dashboard. Routine tasks will be handled by deterministic services; small, bounded AI requests are dispatched only when reasoning or generative writing is strictly required. Six logical agents do not imply six physical servers, six distinct models, or six simultaneous calls.
 
-এই file আগের `README.md`, `CONTEXT.md`, `PLAN.md`, `TASKS.md` এবং `PROGRESS.md`-এর extension। আগের পাঁচটি file এই deliverable-এ পরিবর্তন করা হয়নি। নিচের task/decision IDs সেগুলোতে merge করার নির্দেশনা section 25-এ আছে। মূল privacy, provider permission, approval এবং confirmed Applied/Published status-এর নিয়ম অপরিবর্তিত থাকবে।
+This document serves as an extension of the existing `README.md`, `CONTEXT.md`, `PLAN.md`, `TASKS.md`, and `PROGRESS.md` files. The prior five files remain untouched in this deliverable. Guidance for merging the task/decision IDs below is documented in Section 25. Core principles regarding privacy, provider permissions, human approvals, and verified Applied/Published states remain strictly unchanged.
 
-**প্রস্তাবিত সংখ্যাগুলো configuration defaults/testing targets; measured performance, provider price, official platform limit বা production capacity guarantee নয়।**
+**Proposed numeric values represent configuration defaults and testing targets; they are not measured performance benchmarks, guaranteed provider prices, official platform limits, or production capacity warranties.**
 
 ---
 
-## 1. Product requirements ও non-negotiable rules
+## 1. Product requirements and non-negotiable rules
 
 | ID | Requirement |
 |---|---|
-| REQ-AI-001 | Dashboard থেকে approved AI provider connection add, test, edit, disable, rotate ও revoke করা যাবে। |
-| REQ-AI-002 | Native adapter এবং OpenAI-compatible adapter থাকবে; unsupported API-র জন্য নতুন adapter লাগবে। |
-| REQ-AI-003 | User-private, workspace-shared এবং platform-managed credentials/billing আলাদা থাকবে। |
-| REQ-AI-004 | Task অনুযায়ী model নির্বাচন; ছোট কাজের জন্য অকারণে expensive model নয়। |
-| REQ-AI-005 | প্রতিটি provider call-এর আগে input/output/cost/attempt budget পরীক্ষা ও reserve করতে হবে। |
-| REQ-AI-006 | একই request/cache hit-এর জন্য নতুন model call নয়; regenerate explicit action। |
-| REQ-AI-007 | Context ছোট হবে, কিন্তু facts বা critical eligibility information silently বাদ দেওয়া যাবে না। |
-| REQ-AI-008 | Local inference, browser, OCR ও media workers resource gate ছাড়া start হবে না। |
-| REQ-AI-009 | Bounded concurrency, streamed I/O, small queue messages এবং incremental sync থাকবে। |
-| REQ-AI-010 | AI-এর budget বা API failure non-AI editing, viewing, tracking ও basic export বন্ধ করবে না। |
-| REQ-AI-011 | AI suggestions নিজেরা external actions, permissions বা profile facts approve করতে পারবে না। |
-| REQ-AI-012 | Usage, approximate cost, retries, queue delay, RAM ও bandwidth dashboard-এ explainable হবে। |
+| REQ-AI-001 | Approved AI provider connections can be added, tested, edited, disabled, rotated, and revoked from the Dashboard. |
+| REQ-AI-002 | Provide native adapters and an OpenAI-compatible adapter; unsupported APIs require dedicated new adapters. |
+| REQ-AI-003 | Strictly isolate user-private, workspace-shared, and platform-managed credentials and billing. |
+| REQ-AI-004 | Task-driven model selection; never route routine small tasks to unnecessarily expensive models. |
+| REQ-AI-005 | Validate and reserve input/output/cost/attempt budgets prior to initiating each provider call. |
+| REQ-AI-006 | Never dispatch redundant model calls for identical requests or cache hits; regeneration must remain an explicit user action. |
+| REQ-AI-007 | Minimize context size without silently discarding critical candidate facts or eligibility criteria. |
+| REQ-AI-008 | Local inference, browser automation, OCR, and media workers must not start without passing resource admission gates. |
+| REQ-AI-009 | Enforce bounded concurrency, streamed I/O, compact queue payloads, and incremental synchronization. |
+| REQ-AI-010 | AI budget limits or provider API failures must not disrupt deterministic editing, viewing, job tracking, or basic file exports. |
+| REQ-AI-011 | AI suggestions must never autonomously approve external actions, platform permissions, or profile facts. |
+| REQ-AI-012 | Usage metrics, estimated costs, retries, queue latency, RAM, and bandwidth must be transparently explainable on the dashboard. |
 
-**V1-এ প্রয়োজন নেই:** mandatory LangGraph, CrewAI, AutoGen, Temporal, Python AI service, vector database, per-agent container বা always-running autonomous loop। এগুলো পরবর্তীতে evidence-backed architecture decision ছাড়া যোগ করা যাবে না।
+**V1 Out of Scope:** Mandatory LangGraph, CrewAI, AutoGen, Temporal, dedicated Python AI microservices, vector databases, per-agent containers, or perpetual autonomous loops. These must not be introduced without evidence-backed architectural decision records (ADRs).
 
 ---
 
@@ -75,9 +75,9 @@ Go API / Domain services
                     permitted external action
 ```
 
-**Durability:** PostgreSQL owns runs, input versions, credential metadata, usage, budgets, approvals এবং outcomes। Redis Streams transport ও bounded coordination করবে। Meilisearch authorized retrieval-এর projection; এটি AI memory বা permission authority নয়। Private object storage-এ documents/media থাকবে। এই boundaries আগের `PLAN.md`-এর ADR-001–ADR-010 অনুসরণ করে।
+**Durability:** PostgreSQL owns runs, input versions, credential metadata, usage, budgets, approvals, and outcomes. Redis Streams manages transport and bounded coordination. Meilisearch serves as an authorized retrieval projection; it is neither AI memory nor a permission authority. Private object storage holds documents and media. These boundaries strictly conform to ADR-001 through ADR-010 in `PLAN.md`.
 
-**Deployment:** প্রথমে existing `services/core/cmd/api` এবং `cmd/worker`-এর মধ্যেই gateway package রাখবে। Load data প্রয়োজন প্রমাণ না করা পর্যন্ত আলাদা AI microservice নয়।
+**Deployment:** Initially, package the AI gateway directly within existing `services/core/cmd/api` and `cmd/worker`. Do not create a separate AI microservice until concrete load metrics demonstrate the necessity.
 
 ---
 
@@ -102,66 +102,66 @@ Add AI Provider
 
 | Field | Behavior |
 |---|---|
-| Display name | যেমন `My writing provider`; secret নয়। |
+| Display name | Human-readable label (e.g., `My writing provider`); non-sensitive metadata. |
 | Adapter type | `openai_responses`, `openai_chat_compatible`, `anthropic_native`, `gemini_native`, approved optional adapter। |
-| Base URL / endpoint | Approved origin; public cloud-এ new custom origin approval চাইবে। |
-| API credential | Write-only form; saving-এর পরে masked identifier। Raw key পুনরায় reveal নয়। |
-| Model ID / deployment ID | Provider-এর exact identifier; manual entry সম্ভব। `/models` সব provider-এ আছে ধরে নেওয়া যাবে না। |
-| API version | প্রয়োজনীয় adapters-এ explicit, versioned setting। |
-| Ownership / allowed users | Personal, workspace বা platform; permission server-side। |
+| Base URL / endpoint | Approved origin; in public cloud deployments, adding a custom origin requires administrator approval. |
+| API credential | Write-only form field; stored securely and displayed only as a masked identifier post-save. Raw key is never revealed again. |
+| Model ID / deployment ID | Exact provider identifier; allows manual specification. Do not assume all providers expose a working `/models` endpoint. |
+| API version | Explicit, versioned parameter where required by specific adapters (e.g., Anthropic, Azure). |
+| Ownership / allowed users | Personal, workspace, or platform scope; enforced strictly via server-side authorization. |
 | Allowed data classes | Public content / private career / permitted messaging context / media। |
-| Data residency / retention policy | Known provider policy reference, review date; unknown হলে স্পষ্ট label। |
+| Data residency / retention policy | References published provider policies with review dates; explicitly labeled as unknown if unverified. |
 | Capability status | Verified / Declared / Unsupported / Not tested। |
-| Price card | Currency, input/output/cache/media rate, source, verified date ও billing semantics। |
-| Budget | Per request, day, billing month, run এবং credential pool। |
-| Timeout / rate limits | Provider-aware settings; admin ceiling অতিক্রম নয়। |
-| Fallback | Default off; explicit approved model/connection এবং max cost। |
+| Price card | Currency, input/output/cache/media rates, source URL, verification timestamp, and billing semantics. |
+| Budget | Configurable per request, daily, billing cycle, run, and credential pool. |
+| Timeout / rate limits | Provider-aware timeout and rate threshold configurations; cannot exceed administrative ceilings. |
+| Fallback | Disabled by default; requires explicit approved fallback model/connection and a maximum cost cap. |
 | Enabled agents | Profile, Career, Application, LinkedIn, Content, Research। |
 
-**Test connection:** endpoint validation → authentication/capability probe → optional tiny synthetic generation। Real resume, private conversation বা complete prompt history test-এ পাঠাবে না। Generation test সর্বোচ্চ একটি request; উদাহরণ budget 256 input + 64 billable generation tokens। Model ওই cap support না করলে test চালানোর আগে নতুন estimate/approval চাইবে। Test call-ও metered; dashboard reload-এ repeated test নয়।
+**Test connection:** Endpoint validation → authentication/capability probe → optional minimal synthetic generation. Never transmit real resumes, private messages, or complete chat history during testing. Generation probe is limited to exactly one request with a strict budget (e.g., 256 input + 64 output tokens). If a model does not support these caps, require explicit confirmation before testing. Test probes are fully metered; repeated tests must not trigger automatically on dashboard reload.
 
 **Tooltip examples:**
 
-> “এই key শুধু server-side ব্যবহার হবে। এটি অন্য user বা AI prompt-এ প্রকাশ করা হবে না।”
+> "This credential is used exclusively on the server side. It is never exposed to other users, client browsers, or AI prompts."
 
-> “Connection test provider usage তৈরি করতে পারে। এখানে কোনো personal resume পাঠানো হবে না।”
+> "Connection tests may incur minimal provider usage. No personal resumes or sensitive user data will be transmitted."
 
-> “Model list পাওয়া না গেলে provider dashboard থেকে exact model ID দিন। Save করা এবং capability verified হওয়া এক বিষয় নয়।”
+> "If model autodetection is unavailable, enter the exact model ID from your provider dashboard. Saving credentials does not imply verified model capability."
 
 ### 3.3 Dashboard tabs
 
-| Tab | কী থাকবে |
+| Tab | Contents / Controls |
 |---|---|
 | Providers | Connections, model access, credential rotation, last successful request, known errors। |
-| Agent routing | কোন task কোন model, Economy/Balanced/Advanced mode এবং fallback policy। |
-| Budgets | Used / reserved / available; user, workspace ও payer-specific view। |
+| Agent routing | Mapping tasks to models, Economy/Balanced/Advanced mode toggles, and fallback policies. |
+| Budgets | Real-time used / reserved / available allocations; user, workspace, and payer-specific views. |
 | Usage | Token categories, estimated cost, cache hits, successful/failed attempts। |
 | Runs | Queued, running, waiting for input, budget-blocked, cancelled, usage-pending। |
-| Resource limits | Concurrent jobs, browser/media permissions, queue depth ও RAM thresholds। |
-| Privacy | Allowed data sharing, consent, retention, cache purge ও disconnect। |
+| Resource limits | Concurrency caps, browser/media worker permissions, queue depth limits, and RAM thresholds. |
+| Privacy | Data sharing scopes, user consent flags, retention rules, cache invalidation, and credential revocation. |
 
 ---
 
-## 4. “যেকোনো API” support-এর সঠিক অর্থ
+## 4. Architectural definition of "Any API" support
 
-**Provider-agnostic architecture হবে; arbitrary API universalভাবে plug-and-play হবে না।** Request/response protocol, authentication ও model capability compatible হতে হবে।
+**The architecture is provider-agnostic; however, arbitrary third-party APIs are not universally plug-and-play.** The request/response protocol, authentication scheme, and model capabilities must be compatible.
 
 | Provider family | Implementation path | Caveat |
 |---|---|---|
-| OpenAI | Native Responses adapter; separately tested Chat Completions route প্রয়োজন হলে | Endpoint-specific tool/usage/output mappings। |
-| Anthropic | Native messages adapter | নিজের auth headers, content blocks, stop/usage/cache mapping। |
-| Google Gemini | Native generation adapter অথবা verified OpenAI-compatible endpoint | নির্বাচিত endpoint-এর capability আলাদা হতে পারে। |
-| OpenAI-compatible hosted services | Generic chat adapter + approved endpoint/model manifest | OpenRouter/Groq/DeepSeek-জাতীয় service candidate; প্রতিটি বাস্তব endpoint/model আলাদাভাবে test করতে হবে। |
-| Ollama / private model server | Tested compatible adapter, explicit private-network configuration | Local model loading application server-এ default off। |
-| Azure / Bedrock / অন্য enterprise API | Dedicated adapter | Deployment names, signed requests বা workload identity থাকলে শুধু API key যথেষ্ট নয়। |
-| Image / audio / video APIs | পৃথক typed media adapter | Text model credential দিয়ে সব media feature পাওয়া যাবে ধরে নেওয়া যাবে না। |
-| Unknown vendor | New reviewed adapter বা compatible protocol test | User-provided executable code, arbitrary curl বা JavaScript mapping চালানো যাবে না। |
+| OpenAI | Native Responses adapter; separately tested Chat Completions route if required | Endpoint-specific tool, usage, and output mappings. |
+| Anthropic | Native Messages adapter | Custom auth headers, content blocks, and stop/usage/cache mappings. |
+| Google Gemini | Native generation adapter or verified OpenAI-compatible endpoint | Capabilities may vary depending on the chosen endpoint. |
+| OpenAI-compatible hosted services | Generic chat adapter + approved endpoint/model manifest | Candidate services like OpenRouter, Groq, or DeepSeek; each concrete endpoint and model must be tested and validated individually. |
+| Ollama / private model server | Tested compatible adapter, explicit private-network configuration | Local model loading is disabled by default on the application server. |
+| Azure / Bedrock / Other enterprise APIs | Dedicated adapter | Custom deployment names, request signing, or IAM workload identity mean a simple API key is insufficient. |
+| Image / audio / video APIs | Dedicated typed media adapters | Do not assume text model credentials grant access to specialized media features. |
+| Unknown vendor | New reviewed adapter or validated compatible protocol test | Never execute unreviewed user-supplied code, arbitrary curl snippets, or dynamic JavaScript mappings. |
 
-Google একটি OpenAI compatibility interface document করে; Ollama স্পষ্টভাবে OpenAI API-র subset support বলে। তাই `supports_streaming`, `supports_json_schema`, `supports_tools`, `supports_vision`, `reports_usage` ইত্যাদি provider-এর নাম দেখে নয়, selected endpoint/model ধরে verify করবে। [S4], [S5]
+Google documents an OpenAI compatibility interface; Ollama explicitly implements an OpenAI API subset. Therefore, capabilities such as `supports_streaming`, `supports_json_schema`, `supports_tools`, `supports_vision`, and `reports_usage` must be verified per selected endpoint and model, rather than assumed by brand name. [S4], [S5]
 
 ### 4.1 Capability manifest
 
-প্রতি model/version-এ রাখবে:
+Track per model and version:
 
 ```text
 protocol + endpoint version
@@ -177,11 +177,11 @@ allowed data classes / regions
 compatibility test results
 ```
 
-Unsupported settings silently drop করা যাবে না। উদাহরণ: selected model strict schema support না করলে valid fallback validator route ব্যবহার করবে অথবা task unavailable দেখাবে। Mandatory budget cap honor না করলে model-টিকে সেই automated task-এ enable করবে না।
+Unsupported settings must not be silently discarded. For example, if a selected model lacks strict JSON schema support, the gateway must route through a secondary validation parser or mark the task unavailable. If a model cannot enforce mandatory budget limits, it must not be enabled for automated background tasks.
 
 ---
 
-## 5. Roles, credentials ও billing ownership
+## 5. Roles, credentials, and billing ownership
 
 | Capability | Super Admin | Workspace Admin | User |
 |---|---|---|---|
@@ -194,50 +194,50 @@ Unsupported settings silently drop করা যাবে না। উদাহ
 | Usage visibility | Aggregate operations | Workspace-funded usage | Own usage |
 | Raw private prompt/resume access | No automatic access | No automatic access | Own data |
 
-**BYOK = Bring Your Own Key।** তিনটি billing mode থাকবে: `platform_managed`, `workspace_byok`, `personal_byok`। UI-তে payer আগে দেখাবে। Personal key fail হলে silently platform key বা অন্য member-এর key ব্যবহার নয়।
+**BYOK = Bring Your Own Key.** Three billing modes are supported: `platform_managed`, `workspace_byok`, and `personal_byok`. The responsible payer must be displayed prominently in the UI. If a personal key fails, the system must never silently fall back to platform funds or another workspace member's credential.
 
-App কেবল নিজের মাধ্যমে হওয়া usage measure করবে। একই API key অন্য app-এ ব্যবহার হলে তার billing এই dashboard-এ automatically জানা যাবে না। BYOK provider bill এবং আমাদের hosting/subscription fee আলাদাভাবে দেখাবে।
+The platform meters only the usage routed through its own gateway. If the same API key is utilized across third-party applications, external billing cannot be tracked within this dashboard. The UI must clearly separate BYOK direct provider invoices from platform hosting/subscription tiers.
 
 ### 5.1 Secret handling
 
-API key TLS দিয়ে Go backend-এ যাবে; envelope encryption-এ existing credential vault-এ থাকবে। Encryption root/master key database ও public repo-র বাইরে রাখতে হবে। Logs, traces, Redis messages, support export, analytics বা prompt-এ secret যাবে না। `NEXT_PUBLIC_*`, localStorage বা browser-to-provider requests-এ provider key রাখা যাবে না।
+API credentials must be transmitted via TLS directly to the Go backend and protected using envelope encryption in the secure credential store. Master encryption keys must reside strictly outside the database and source repository. Secrets must never appear in application logs, traces, Redis payloads, support bundles, analytics events, or model prompts. Never expose keys in `NEXT_PUBLIC_*` environment variables, browser localStorage, or client-side requests.
 
-Base URL, owner scope বা provider adapter বদলালে connection revalidation বাধ্যতামূলক। নতুন origin-এ পুরোনো credential automatically forward নয়। Key revoke হলে queued এবং নতুন attempts dispatch বন্ধ; already-sent request-এর outcome আলাদা reconcile করতে হবে।
+Modifying a base URL, ownership scope, or adapter requires mandatory connection re-validation. Credentials must never be automatically forwarded to modified origins. When a key is revoked, queued and new dispatch attempts are immediately blocked; inflight requests must be reconciled independently.
 
-### 5.2 Custom endpoint নিরাপত্তা
+### 5.2 Custom endpoint security and egress controls
 
-Public cloud-এ arbitrary endpoint accept করে server-কে open proxy বানাবে না। Approved HTTPS origin allowlist, port/path constraints, certificate verification ও controlled egress থাকবে। Redirect default off। Connect করার সময় DNS/IP validate করবে; loopback/private/link-local/cloud-metadata destinations, IPv4/IPv6 variants এবং DNS rebinding ঠেকাতে application validation-এর সঙ্গে network policy থাকবে। [S8]
+Never accept arbitrary endpoints in public cloud deployments to prevent turning the server into an open proxy. Enforce an approved HTTPS origin allowlist, strict port/path constraints, TLS certificate validation, and controlled egress. HTTP redirects are disabled by default. Validate DNS and resolved IPs upon connection; prevent loopback, private, link-local, and cloud-metadata addresses (IPv4/IPv6) as well as DNS rebinding attacks using combined application and network firewall rules. [S8]
 
-Self-hosted local Ollama endpoint-এর জন্য **operator-controlled exact network exception** দেওয়া যাবে। Public cloud tenant নিজের form দিয়ে localhost বা internal database subnet খুলতে পারবে না। Cloud থেকে user's local machine access চাইলে separately authenticated private connector প্রয়োজন; শুধু `localhost` URL যথেষ্ট নয়।
+For self-hosted local Ollama endpoints, exact network exceptions may be granted under explicit operator control. In a multi-tenant public cloud, users must not be permitted to point endpoints to localhost or internal network subnets. Accessing a user's local machine from the cloud requires a dedicated, authenticated tunneling connector—specifying `localhost` in the URL is strictly prohibited.
 
 ---
 
-## 6. ছয়টি logical agent
+## 6. Six logical agents
 
-| Agent | দায়িত্ব | AI output | যা সরাসরি করতে পারবে না |
+| Agent | Responsibility | AI Output | Prohibited Autonomous Actions |
 |---|---|---|---|
-| Profile Agent | Extracted resume text থেকে structured candidate profile; ambiguity/missing facts | Candidate facts + source spans + questions | Confirmed profile silently overwrite |
-| Career Agent | Match explanation, resume tailoring, cover letter, interview preparation | Fact-grounded suggestions / versioned draft | Qualification বা achievement বানানো |
-| Application Agent | Unknown free-text form question-এর answer draft | Answer + supporting fact IDs + unresolved fields | Eligibility guess বা submit |
-| LinkedIn Agent | Headline/About/experience optimization, professional notes/comments/replies | Before/after diff বা draft | Account connect, send বা profile update অনুমতি দেওয়া |
-| Content Agent | Voice-aware posts, hooks, repurposing, scripts ও media brief | Versioned text/asset plan | Unreviewed publish বা unlimited media generation |
-| Research Agent | Approved evidence থেকে trends/competitor/comment synthesis | Cited report + coverage limitations | Autonomous unlimited crawl বা private identity inference |
+| Profile Agent | Structures extracted resume text into profile facts; identifies missing fields | Candidate facts + source spans + clarifying questions | Cannot silently overwrite user-confirmed profile data |
+| Career Agent | Tailors resumes, generates match analyses, drafts cover letters and prep notes | Grounded suggestions / versioned drafts | Cannot fabricate unverified qualifications or achievements |
+| Application Agent | Drafts answers to unmapped free-text job application questions | Draft response + supporting fact IDs + unresolved fields | Cannot guess legal eligibility or submit applications autonomously |
+| LinkedIn Agent | Optimizes headline, about section, notes, and professional responses | Before/after diffs and editable drafts | Cannot connect accounts, dispatch messages, or update profiles without human confirmation |
+| Content Agent | Generates tone-aware posts, hooks, article drafts, and media briefs | Versioned content drafts and asset plans | Cannot publish content unreviewed or trigger unbounded media generation |
+| Research Agent | Synthesizes industry trends, discussions, and competitor insights from approved sources | Cited reports with explicit coverage boundaries | Cannot execute autonomous unbounded crawls or infer private individual identities |
 
-Agent definition হলো `task key + prompt version + schema + data scope + model route + budgets + validators`। শুধু একটি headline rewrite-এর জন্য অন্য পাঁচটি agent call হবে না।
+An agent is defined formally as: `task key + prompt version + output schema + data scope + model route + budgets + validators`. An operation like a headline rewrite must never trigger invocations across unrelated agents.
 
-**Shared writing:** LinkedIn Agent এবং Content Agent একই text-generation gateway/prompt primitives reuse করবে; দুই module একই post-এর জন্য duplicate generation করবে না।
+**Shared writing primitives:** The LinkedIn Agent and Content Agent reuse identical text-generation gateway and prompt primitives; separate modules must never trigger duplicate generation passes for the same content piece.
 
-### 6.1 কোন কাজে AI call হবে না
+### 6.1 Tasks with zero AI invocations
 
-Signup/login, roles/packages, manual profile forms, required-field checks, deterministic ATS layout, PDF/DOCX rendering, job dedupe, ordinary filters, confirmed Applied state, calendar, published-status reconciliation, CSV/Sheets export, quota checks, arithmetic analytics, notifications এবং credential health metadata-তে default **0 LLM calls**।
+User signup/login, role/package enforcement, manual profile forms, required field validation, deterministic ATS layout generation, PDF/DOCX rendering, job deduplication, standard database filtering, updating confirmed Applied statuses, calendar tracking, publishing state reconciliation, CSV/Sheets export, quota checks, numerical analytics, transactional notifications, and credential health checks require **0 LLM calls** by default.
 
-Resume parser প্রথমে text extract করবে। AI কেবল semantic mapping/ambiguous section processing-এ ব্যবহার হবে। Missing required field rule দিয়ে ধরা গেলে সেই জন্য নতুন model call নয়।
+Resume ingestion extracts text deterministically first. LLM calls are reserved solely for semantic taxonomy mapping and resolving ambiguous sections. Missing mandatory fields detected by deterministic rules must never trigger model calls.
 
 ### 6.2 Orchestrator
 
-V1-এ buttons/workflows task নির্ধারণ করবে; LLM router প্রয়োজন নেই। Optional chat orchestration পরে add করা যাবে, কিন্তু সর্বোচ্চ 4 planned steps, 3 provider attempts total এবং স্পষ্ট run budget থাকবে। Agent-to-agent recursive delegation বা endless critic/rewrite loop নয়।
+In V1, standard UI actions and workflows explicitly dispatch tasks; no dynamic LLM router is needed. If optional conversational orchestration is introduced later, it must enforce a maximum of 4 planned steps, 3 total provider attempts per run, and strict budgetary caps. Recursive agent-to-agent delegation and infinite critic/rewrite loops are prohibited.
 
-Model proposed action দিলে Go policy তা independently যাচাই করবে। Model-এর `requires_approval: false` কোনো permission grant নয়।
+If a model proposes an action, the Go domain policy must validate it independently. A model returning `requires_approval: false` in its payload does not constitute an authorized permission grant.
 
 ---
 
@@ -261,7 +261,7 @@ Model proposed action দিলে Go policy তা independently যাচা�
 15. External action remains a separate approved domain workflow
 ```
 
-প্রতি retry-তে নতুন `attempt_id`, কিন্তু একই `run_id`। Database transaction network response-এর জন্য open রাখা যাবে না। Output generate হওয়া, user approve করা এবং external action হওয়া আলাদা events।
+Each retry generates a new `attempt_id` under the same persistent `run_id`. Database transactions must never remain open while awaiting external network responses. Output generation, user approval, and external platform actions are strictly decoupled events.
 
 ### 7.1 Result envelope — illustrative contract
 
@@ -281,7 +281,7 @@ Model proposed action দিলে Go policy তা independently যাচা�
 }
 ```
 
-এই shape design example; runnable API ইতোমধ্যে আছে এমন দাবি নয়।
+This schema illustrates the intended design contract; it does not represent an already deployed live endpoint.
 
 ---
 
@@ -289,20 +289,20 @@ Model proposed action দিলে Go policy তা independently যাচা�
 
 | Mode | Policy |
 |---|---|
-| Economy — default | সংশ্লিষ্ট task-এর evaluation pass করা সবচেয়ে কম estimated-cost approved model; smallest sufficient context। |
+| Economy — default | The lowest estimated-cost approved model that passes task evaluations, operating with the smallest sufficient context. |
 | Balanced | User/workspace selected route; bounded one-step escalation allowed if explicitly configured। |
-| Advanced | User explicitly requests larger context/stronger model; নতুন estimate ও approval প্রয়োজন। |
-| Manual / AI paused | Profile editing, template-based resume/export ও existing records available; generation disabled। |
+| Advanced | User explicitly requests larger context or higher-capability models; requires explicit cost estimate and user confirmation. |
+| Manual / AI paused | Deterministic profile editing, template-based resumes/exports, and existing records remain fully operational; AI generation disabled. |
 
-`economy_text`, `quality_text`, `vision_optional`, `media_optional` হবে configurable aliases, hardcoded commercial model IDs নয়। অর্থসাশ্রয়ী model relevant Bengali/English fixtures ও factual checks pass না করলে সেটিকে cheapest বলে production route করা যাবে না।
+`economy_text`, `quality_text`, `vision_optional`, and `media_optional` serve as configurable aliases rather than hardcoded commercial model identifiers. A low-cost model must not be routed to production simply because it is cheap unless it successfully passes relevant multilingual fixtures and factual validation checks.
 
-**Fallback defaults:** off। Enable করলে maximum one alternate attempt, একই task budget-এর ভেতরে। More expensive model, নতুন vendor, data residency change বা নতুন payer silently নির্বাচন নয়। Timeout-এর পরে first request potentially processed হলে automatic fallback বন্ধ; duplicate cost risk দেখাবে।
+**Fallback defaults:** Disabled by default. If enabled, allow at most one alternate attempt within the same task budget. The system must never silently switch to a more expensive model tier, an unapproved vendor, an altered data residency jurisdiction, or an alternate payer. If an initial request times out after potential upstream dispatch, automatic fallback is prohibited to prevent duplicate billing risks.
 
 ---
 
 ## 9. Token budget: task-wise hard caps
 
-সব input cap-এর মধ্যে system prompt, tool/schema definitions, previous messages এবং retrieved context অন্তর্ভুক্ত। Generation cap-এ reasoning/hidden generation কীভাবে counted হয় adapter manifest তা নির্ধারণ করবে। ছোট output মানেই ছোট bill নয়—যেমন OpenAI reasoning tokens output billing-এর অংশ। [S2]
+All input caps encompass the system prompt, tool/schema declarations, conversational history, and retrieved context chunks. The adapter manifest defines how reasoning or hidden thinking tokens are billed against the generation cap. A short visible completion does not guarantee low cost—for example, OpenAI reasoning tokens are billed as output tokens. [S2]
 
 ### 9.1 Initial Economy task budgets
 
@@ -320,19 +320,19 @@ Model proposed action দিলে Go policy তা independently যাচা�
 | Research brief from selected evidence | 8,000 | 1,800 | 1 | 3 |
 | Analytics insight from SQL aggregates | 1,500 | 500 | 1 | 2 |
 
-**Max attempts-এর মধ্যে সব repair, retry, fallback ও chunk calls counted।** এটি প্রতি stage-এর allowance নয়। Research-এর 3 attempts-এ preprocessing/synthesis থাকলে সেগুলোও counted। Long resume, large report বা video script এই caps-এ না ধরলে আলাদা expanded workflow estimate চাইবে; silently truncate করে “complete” result নয়।
+**The maximum attempt limit encompasses all schema repairs, retries, fallbacks, and chunk iterations.** This cap applies across the entire run rather than resetting per stage. If a research task requires 3 attempts across preprocessing and synthesis, all calls are counted against the budget. If extensive documents or media scripts exceed standard caps, the system must request approval for an expanded workflow estimate rather than silently truncating and falsely presenting a "complete" result.
 
-Model-এর minimum generation/thinking requirement cap-এর চেয়ে বেশি হলে আরেকটি tested model route ব্যবহার অথবা budget approval চাইবে। Unsupported `temperature`, `reasoning_effort`, `max_tokens` বা provider-specific parameter সব API-তে একইভাবে পাঠানো যাবে না।
+If a model's minimum generation or reasoning requirement exceeds configured caps, route to an alternative validated model or prompt for explicit budget approval. Unsupported parameters such as `temperature`, `reasoning_effort`, or `max_tokens` must not be sent indiscriminately to incompatible provider APIs.
 
 ### 9.2 Reduce calls before reducing quality
 
-প্রথমে cache/structured fields/rules ব্যবহার করবে। LLM self-reported confidence-কে সত্যতা verification ধরে নেওয়া যাবে না। Schema validation deterministic; known facts source IDs দিয়ে মিলবে। Invalid JSON-এ maximum one budgeted repair; missing career facts-এ repair নয়, user input।
+Prioritize caches, structured records, and deterministic business rules first. Never rely on an LLM's self-reported confidence as verification of factual accuracy. Enforce deterministic schema validation and anchor facts against verified source identifiers. Allow at most one budgeted JSON repair pass on syntax errors; missing candidate facts require human clarification rather than model hallucination.
 
-Form edit-এ AI auto-run হবে না। Autosave debounce করা যাবে, কিন্তু saving এবং paid generation আলাদা user actions। “Regenerate” current result replace না করে নতুন version ও usage তৈরি করবে।
+Standard form editing must not trigger automatic AI runs. Field autosave may be debounced, but saving records and initiating paid generation remain distinct user actions. "Regenerate" actions create a new version and track new usage rather than destructively overwriting previous results.
 
 ### 9.3 Job discovery example
 
-একটি **illustrative workflow**, savings benchmark নয়:
+An **illustrative workflow**, not a guaranteed efficiency benchmark:
 
 ```text
 100 discovered jobs
@@ -343,17 +343,17 @@ Form edit-এ AI auto-run হবে না। Autosave debounce করা যা
   → resume + cover letter only for the 2 the user chooses
 ```
 
-এতে unselected 90 job-এর জন্য AI explanation call হয় না। Resume/letter-ও 100টির জন্য তৈরি হয় না। Preliminary ranking explainable হবে এবং uncertain eligibility বা wording variation-এর কারণে relevant jobs চিরতরে লুকাবে না।
+In this pipeline, 90 unselected jobs incur zero AI explanation calls, and resumes or cover letters are never batch-generated for all 100 listings. Preliminary rankings remain transparent, and listings with ambiguous phrasing are never permanently hidden.
 
 ---
 
-## 10. Monetary budgets, metering ও overspend prevention
+## 10. Monetary budgets, metering, and overspend prevention
 
 ### 10.1 Budget scopes
 
-`request → run → user → workspace → credential pool/payer → platform` scopes-এ limit থাকবে। প্রতিটি scope-এ consumed এবং reserved আলাদা। Day/rolling window/billing month reset semantics explicit হবে। একই key/module অন্য route দিয়ে ব্যবহার করলেও relevant shared payer limit এড়াতে পারবে না।
+Spending limits are enforced across nested scopes: `request → run → user → workspace → credential pool/payer → platform`. Each scope tracks consumed and reserved allocations independently. Daily, rolling window, and monthly reset semantics must be explicitly defined. Routing requests through alternate modules or paths cannot circumvent shared payer caps.
 
-**Suggested UX:** 80% warning, 95% prominent warning, 100% হলে নতুন billable call blocked। Notification-এর জন্য AI দরকার নেই। Production dollar amount এই document approve করে না; Super Admin approved price metadata ও package অনুযায়ী সেট করবে।
+**Suggested UX:** Emit an 80% quota warning, a 95% prominent notice, and block new billable calls at 100%. Notifications must be dispatched deterministically without AI. Specific production currency thresholds are not mandated by this document; the Super Admin configures limits based on validated price cards and subscription packages.
 
 ### 10.2 Before-call reservation
 
@@ -366,58 +366,58 @@ reserve_before_send = conservative billable input estimate
                     + explicitly bounded tool/media charges
 ```
 
-All relevant reservations একটি short PostgreSQL transaction-এ atomic হবে। Redis coordination accelerator; durable budget truth নয়। Insufficient budget হলে কোনো provider call পাঠানো যাবে না। Retry-তেও নতুন reservation লাগবে।
+All relevant budget reservations must occur atomically within a brief PostgreSQL transaction. Redis serves as an ephemeral coordination accelerator, not the durable ledger of record. If available balance is insufficient, external provider calls are rejected immediately. Retries require a separate atomic reservation.
 
-Raw/provider usage categories normalize করে non-overlapping billing line items তৈরি করবে। Provider-এর `output_tokens`-এ reasoning included থাকলে আবার reasoning যোগ করে double charge নয়। Cache read/write-ও provider-specific semantics অনুযায়ী normal input থেকে আলাদা করবে। Money integer micro-units বা database decimal-এ; floating-point ledger নয়।
+Normalize raw provider usage categories into non-overlapping billing line items. If a provider bundles reasoning tokens into reported `output_tokens`, avoid double-charging by counting reasoning separately. Distinguish cache read/write tokens from standard input tokens based on vendor semantics. Represent currency using integer micro-units or precise database decimals, never floating-point types.
 
 ### 10.3 Accounting states
 
 | State | Meaning |
 |---|---|
-| `estimated` | আগে থেকে estimated token/cost; final invoice নয়। |
-| `reported` | Provider response-এর usage থেকে calculation। |
-| `pending_reconciliation` | Request পাঠানো হয়েছে, কিন্তু final usage/outcome জানা নেই। |
-| `reconciled` | Provider evidence/controlled accounting review দিয়ে ledger সংশোধিত। |
+| `estimated` | Pre-execution token and cost reservation; not a finalized invoice amount. |
+| `reported` | Metric calculated directly from usage reported in the provider API response. |
+| `pending_reconciliation` | Request was dispatched, but final status or usage could not be confirmed. |
+| `reconciled` | Ledger updated following provider verification or controlled audit reconciliation. |
 
-Unknown outcome-এ reservation TTL expire হয়েছে বলে খরচ zero ধরে release নয়। Network timeout/cancel-এর পর request billed হয়ে থাকতে পারে; usage pending রেখে নতুন retry থামাবে অথবা explicit bounded recovery policy প্রয়োগ করবে। Cancellation আগের incurred charge ফিরিয়ে দেয় না।
+If an operation outcome is indeterminate, never release reserved funds by assuming zero cost simply because an in-memory TTL expired. A request may have completed on the provider side despite a local network timeout; keep usage in a pending state, suppress blind retries, and apply a bounded reconciliation policy. Cancellation does not refund already incurred provider charges.
 
-**Spending cap-এর সীমানা:** gateway নতুন requests-এর admission সীমিত করে; provider-এর নিজের billing enforcement-এর বিকল্প নয়। Price-card drift, token estimation error, unreported usage এবং একই key অন্য app-এ ব্যবহার হলে exact final invoice guarantee নেই। Provider-side spending controls পাওয়া গেলে সেটিও configure করতে হবে।
+**Spending cap boundaries:** The gateway regulates internal request admission; it cannot replace the provider's upstream billing enforcement. Fluctuations in price cards, token estimation variances, unmetered usage flags, or sharing keys across external apps preclude absolute guarantees against upstream invoice totals. Upstream spending limits must also be configured on the provider console.
 
-Unknown price-এর route platform-funded auto-run-এ disabled থাকবে। Personal BYOK-এ operator-approved `token_only` mode রাখা যেতে পারে, কিন্তু “money cap guaranteed” দেখাবে না। Unknown context/output/usage semantics থাকলে unattended AI workflow enable নয়।
+Routes with unverified pricing must be disabled for platform-funded automated runs. Personal BYOK connections may permit an operator-approved `token_only` tracking mode, provided the UI does not falsely guarantee monetary caps. Unattended workflows must remain disabled for models with unknown context, output, or usage semantics.
 
 ---
 
-## 11. Context minimization এবং safe memory
+## 11. Context minimization and safe memory
 
 ### 11.1 Context builder
 
-Task-specific fields fetch করবে, entire database/profile/history নয়। Cover letter-এ selected experience, skills, verified company/job facts যথেষ্ট হলে passport, full address বা private inbox লাগবে না।
+Fetch only task-relevant fields rather than hydrating the entire candidate profile or historical database. If drafting a cover letter requires specific work experience, skills, and verified employer details, exclude sensitive identifiers like passport numbers, complete postal addresses, or private message threads.
 
-Resume raw text একবার parse ও version করবে। পরের task-এ relevant `profile_facts` এবং source IDs যাবে। Scraped HTML প্রথমে text extraction/normalization হবে; scripts, styles, navigation ও repetitive boilerplate model prompt-এ যাবে না।
+Parse and version raw resume text once. Subsequent downstream tasks ingest structured `profile_facts` and provenance IDs. Scraped job HTML must undergo text extraction and sanitization first; scripts, stylesheets, navigation bars, and repetitive boilerplate must never enter the model prompt.
 
-Meilisearch দিয়ে authorized top matches retrieve করা যাবে; detail Go/PostgreSQL থেকে reauthorize করে hydrate করবে। প্রথম release-এ embeddings/vector search বাধ্যতামূলক নয়। Long-lived “memory” হলো versioned database facts, unlimited in-process chat transcript নয়।
+Meilisearch may retrieve top authorized candidate matches; full records must be re-authorized and hydrated from Go and PostgreSQL. Vector search and embeddings are not mandatory in the initial release. Persistent memory is modeled as versioned structured database records, not unbounded in-memory conversational transcripts.
 
 ### 11.2 Long inputs
 
-UTF-8 byte size থেকে exact token count অনুমান করা যাবে না; বিশেষ করে বাংলা/English mixed text-এ fixed `characters ÷ 4` shortcut ব্যবহার নয়। Available provider-compatible tokenizer বা verified count API ব্যবহার করবে। অন্য ক্ষেত্রে conservative estimate + safety margin + documented status।
+Do not infer exact token counts from raw UTF-8 byte lengths; specifically, avoid simplistic `characters / 4` heuristics on mixed Bengali and English prose. Utilize provider-compatible tokenizers or official token-counting endpoints where available. Otherwise, employ a conservative estimation heuristic with documented safety margins.
 
-Input বড় হলে section-aware selection/chunking হবে। `coverage: full | partial` এবং excluded sections record করতে হবে। Facts extraction অসম্পূর্ণ হলে profile complete বলা যাবে না। Reduced prompt-এর পাশাপাশি source spans থাকবে যাতে suggestion verify করা যায়।
+For extensive inputs, implement section-aware selection or chunking while recording `coverage: full | partial` along with any omitted sections. If fact extraction was incomplete, the profile must not be marked complete. Maintain source citation spans alongside prompt inputs to facilitate suggestion verification.
 
 ### 11.3 Chat memory
 
-Stateless form tasks history পাঠাবে না। Chat workflow-এ default: bounded recent turns, compact confirmed-fact snapshot এবং প্রয়োজনীয় evidence। উদাহরণ: সর্বোচ্চ 6 recent messages + 600-token summary, সবই task input cap-এর মধ্যে।
+Stateless form tasks must not transmit conversational history. For interactive chat workflows, default to bounded recent exchanges, a compact snapshot of verified facts, and relevant source evidence (e.g., maximum 6 recent messages plus a 600-token summary, staying strictly within the task input ceiling).
 
-প্রতি message-এ summary generation নয়; threshold ছাড়ালে persisted summary update। Summary call-ও run/user budget consumes করবে। Confirmed career facts narrative summary থেকে পুনর্গঠন নয়; original structured facts থাকবে।
+Avoid regenerating summaries on every message turn; trigger updates to the persisted summary only when message thresholds are crossed. Summary calls consume from the active run and user budget. Verified candidate facts must never be reconstructed from conversational summaries; they must remain anchored in original structured records.
 
 ---
 
-## 12. Caching: cost, tokens এবং bandwidth আলাদা
+## 12. Caching: distinguishing cost, tokens, and bandwidth
 
 ### 12.1 Exact-result application cache
 
-একই authorized task/input/version-এর validated existing output থাকলে provider call না করে সেটি দেখাবে। এ request-এ নতুন model tokens লাগে না; আগের generation-এর usage record থাকবে।
+If a validated existing output exists for the identical authorized task, input fingerprint, and model version, serve it directly without dispatching a new provider call. These cached responses consume zero new model tokens; the UI displays historical usage records.
 
-Cache key-এর ingredients:
+Cache key constituents:
 
 ```text
 workspace + owner/resource visibility + authorization revision
@@ -429,44 +429,44 @@ provider-data-policy / consent version
 locale + explicit regeneration nonce when requested
 ```
 
-Secret key cache key-তে থাকবে না। HMAC/hash দিয়ে identifiers রাখবে; private payload public/cache-shared namespace-এ নয়। Cache read-এর আগেও permission recheck এবং user deletion/revocation-এ invalidate করবে। A user's resume output অন্য user-কে match করে দেওয়া যাবে না।
+Secret credentials must never enter cache keys. Store hashed or HMAC-derived identifiers; private payloads must never reside in shared global cache namespaces. Re-check permissions prior to reading cache entries and invalidate on user deletion or revocation. One user's resume generation output must never be served to another user.
 
-Large cached artifacts private storage-এ; PostgreSQL metadata/output reference; Redis-এ ছোট pointer বা lookup key মাত্র। Exact versioned artifact reuse-এর জন্য unlimited hot RAM cache প্রয়োজন নেই। Cache entry count, byte ceiling ও cleanup job থাকবে।
+Store large cached artifacts in private object storage, maintain metadata references in PostgreSQL, and keep only compact lookup keys in Redis. Never maintain an unbounded in-memory cache for artifact reuse. Enforce entry counts, maximum byte limits, and scheduled cleanup eviction routines.
 
-**Not cacheable as reusable success:** errors, incomplete outputs, expired permission, pending provider outcome, application submit, message send বা publish side effects।
+**Prohibited from success caching:** API errors, partial generations, expired authorizations, indeterminate provider results, application submissions, message dispatches, or social publishing side effects.
 
 ### 12.2 Provider prompt cache
 
-Supported provider-এ stable instructions/schema reusable prefix হিসেবে রাখা যাবে। Cache boundary এবং pricing selected model/API অনুযায়ী adapter implement করবে; “same system prompt মানেই cache hit” নয়। OpenAI ও Anthropic prefix reuse-এর নিজস্ব rules document করে; Gemini caching-ও endpoint/model-dependent। [S1], [S3], [S13]
+On supported providers, stable system instructions and schemas can be formatted as reusable prompt prefixes. Cache boundaries and pricing mechanics must be handled according to vendor specifications; identical system prompts do not guarantee an upstream cache hit. OpenAI and Anthropic document specific prefix-length criteria, and Gemini context caching is dependent on model and endpoint configurations. [S1], [S3], [S13]
 
-Provider cache hit মানে final answer stored আছে নয়। নতুন output generation charged হতে পারে; cache writes/storage-ও chargeable হতে পারে। Provider prompt caching-এ request body আবার পাঠাতে হতে পারে—এটি automatic bandwidth reduction নয়।
+An upstream provider prompt cache hit does not mean the final completion is pre-computed. New generated tokens remain fully billable, and prompt cache writes or storage retention may incur separate charges. Furthermore, prompt caching still requires transmitting the request payload, meaning it does not automatically reduce upstream network egress.
 
-Exact-result cache, smaller context ও fewer calls হলো প্রধান সাশ্রয়ের পথ। Cache discount অনুমান করে budget reservation ছোট করবে না; observed usage থেকে settlement করবে।
+Exact-result caching, compact context windows, and eliminating redundant calls represent the primary avenues for efficiency. Never downsize budget reservations based on hypothetical prompt cache discounts; reconcile against actual reported usage after the response is received.
 
 ---
 
-## 13. Retry, fallback এবং schema failure policy
+## 13. Retry, fallback, and schema failure policies
 
 | Failure | Required handling |
 |---|---|
-| Invalid credential / revoked key | Pause connection; owner-কে notify; repeated retries নয়। |
-| Unsupported model/capability | Clear setup error; matching tested model নির্বাচন। |
-| Invalid input/context limit | Smaller sufficient context বা expanded-budget approval; endless retry নয়। |
+| Invalid credential / revoked key | Suspend connection; notify account owner; suppress repeated retries. |
+| Unsupported model/capability | Return descriptive setup error; select compatible validated model. |
+| Invalid input/context limit | Trim to smaller sufficient context or request expanded budget approval; suppress endless retries. |
 | Explicit provider rate limit | Respect response backoff/reset; bounded reschedule। |
 | Connection failed before dispatch is certain | One bounded retry allowed within remaining attempts/budget। |
-| Timeout after possible dispatch | Usage pending; reconcile; automatic duplicate paid call নয়। |
+| Timeout after possible dispatch | Mark usage as pending reconciliation; suppress automatic duplicate paid calls. |
 | Invalid structured result | Reject incomplete result; at most one budgeted repair if appropriate। |
-| Missing fact / unsafe inferred answer | `needs_input`; guessed answer নয়। |
-| Safety refusal | User-facing status; অন্য provider-এ switch করে bypass নয়। |
+| Missing fact / unsafe inferred answer | Transition to `needs_input`; never output fabricated guesses. |
+| Safety refusal | Surface user-facing notice; do not attempt to bypass filters by switching providers. |
 | User cancellation | Stop future steps; cancel supported request best-effort; settle incurred usage। |
 
-Strict structured output useful হলেও refusals, incomplete output এবং application-level factual errors handle করতে হবে। Valid JSON নিজে truth guarantee নয়। [S9]
+While strict structured output is valuable, applications must gracefully handle safety refusals, truncated outputs, and application-level factual errors. Valid JSON syntax does not guarantee factual truth. [S9]
 
-Budget, provider circuit breaker এবং queue saturation retry loop-কে থামাবে। একটি global fallback chain-এ 5 provider try করা যাবে না।
+Budget constraints, provider circuit breakers, and queue saturation must terminate retry loops promptly. Chaining 5 sequential fallback providers in a global loop is strictly prohibited.
 
 ---
 
-## 14. RAM optimization এবং worker admission
+## 14. RAM optimization and worker admission
 
 ### 14.1 Low-resource defaults
 
@@ -480,60 +480,60 @@ Budget, provider circuit breaker এবং queue saturation retry loop-কে �
 | Media generation/transcoding | Off by default; separate opt-in queue and resource budget। |
 | Queue payload | References only; no PDFs, base64 images, secrets or whole prompts। |
 | In-process hot cache | Bounded; illustrative maximum 8 MiB per Go process। |
-| Task registry | Load only selected prompt/schema; all upstream skill files নয়। |
+| Task registry | Ingest only selected prompts and schemas; never load all upstream skill files into memory. |
 
-**সাশ্রয়ের trade-off:** কম parallelism-এ queued কাজের অপেক্ষা বাড়বে। Provider API ব্যবহার করলে model weights local RAM-এ থাকবে না, কিন্তু network, privacy এবং provider cost থাকবে। Local inference-এ server RAM/VRAM প্রয়োজন; parallel contexts memory আরও বাড়াতে পারে। Ollama-র documentation-ও concurrency/context-এর এই সম্পর্ক দেখায়। [S6]
+**Architectural trade-offs:** Reducing concurrency increases queue latency for background tasks. Cloud provider APIs keep model weights off local RAM, but introduce network latency, external data transfers, and per-token costs. Local inference demands substantial server RAM/VRAM, where concurrent contexts expand memory footprints significantly, as documented in Ollama's resource guides. [S6]
 
 ### 14.2 Process controls
 
-Go-তে bounded worker pool, reusable HTTP clients, finite connection pools, request deadlines এবং streamed I/O ব্যবহার করবে। `GOMEMLIMIT` runtime-managed memory-এর **soft limit**; RSS/container/Chrome memory-এর hard cap নয়। Container/OS limit ও allocation monitoring আলাদা লাগবে। [S7]
+In Go, employ bounded worker pools, reusable HTTP transport clients, finite connection pools, strict request deadlines, and streamed I/O. Note that `GOMEMLIMIT` acts as a **soft limit** for Go runtime memory, not a hard cap on overall container RSS or external Chromium processes. Container and OS-level memory limits and allocation monitoring must be configured independently. [S7]
 
-Node worker V8 heap limit পুরো process RSS limit নয়; Chromium ও native buffers আলাদা measure করতে হবে। `next dev` production runtime নয়; build আলাদা CI/build host-এ করা ভালো। No unbounded `Promise.all`, goroutine-per-record বা full dataset in memory।
+The Node worker V8 heap ceiling does not account for total process RSS; Chromium instances and native buffers must be monitored separately. `next dev` is not a production runtime; builds should execute on dedicated CI hosts. Unbounded `Promise.all` batches, spawning goroutines per record, and reading full datasets into memory are prohibited.
 
 ### 14.3 Illustrative resource envelope
 
-নিচের values একটি ছোট **8-GiB test host**-এর জন্য initial container ceilings উদাহরণ; minimum hardware promise বা benchmark নয়। Browser/media default off এবং heavy tasks serialized। Actual RSS/CPU/I/O দিয়ে tune করতে হবে।
+The following memory allocations illustrate initial container limits on a constrained **8-GiB test host**; they are not minimum hardware warranties or performance benchmarks. Browser and media workers are disabled by default, and resource-heavy jobs are serialized. Tune limits based on observed RSS, CPU, and disk I/O.
 
 | Process | Example container ceiling | Additional setting / note |
 |---|---:|---|
-| Next.js production web | 512 MiB | Build-time memory এর মধ্যে ধরা হয়নি। |
+| Next.js production web | 512 MiB | Excludes build-time memory spikes. |
 | Go API | 256 MiB | Example `GOMEMLIMIT=192MiB`। |
 | Go worker | 256 MiB | Example `GOMEMLIMIT=192MiB`। |
-| PostgreSQL | 1,024 MiB | Bounded connections, query memory ও work batches। |
-| Redis | 256 MiB | Example `maxmemory=128mb`; overhead/persistence reserve থাকবে। |
+| PostgreSQL | 1,024 MiB | Bounded connection pools, restricted work memory, and batch queries. |
+| Redis | 256 MiB | Configured with `maxmemory=128mb`; reserves remainder for overhead and persistence buffers. |
 | Meilisearch | 1,024 MiB | Start with one indexing thread and explicit indexing-memory budget। |
 | On-demand TS document helper | 1,024 MiB | Measure renderer/native subprocess peak; one heavy job। |
 | Optional browser process group | 1,536 MiB | Not always running; separate account isolation। |
 
-এই example ceilings একত্রে 5,888 MiB; বাকি host memory OS, filesystem cache, native overhead ও safety headroom-এর জন্য। Ceiling allocation guarantee নয়, এবং subprocess supervision সঠিক না হলে মোট usage আলাদা হতে পারে। Lower-memory deployment-এ remote browser/render workers বা কম concurrency প্রয়োজন হতে পারে; load test ছাড়া production claim নয়।
+These example ceilings sum to 5,888 MiB, reserving remaining host memory for the operating system, filesystem page caches, native runtimes, and safety headroom. Setting ceilings does not guarantee isolation if subprocesses are unmanaged. Environments with lower memory may require remote browser workers or reduced concurrency; verify via load testing before production deployment.
 
 ### 14.4 Pressure response
 
-At a configurable warning threshold, stop admitting new heavy work. At a critical threshold, pause background research/indexing/media and preserve essential UI/API access. Initial policy candidates: warning at 75% and critical at 85% of measured effective memory limit, with hysteresis before resuming। Idle browser shutdown threshold proposed 60 seconds; resume পরে persisted state থেকে।
+Halt admission of resource-intensive tasks at a configurable warning threshold. At a critical threshold, suspend background research, indexing, and media pipelines to ensure core UI and API stability. Recommended baseline thresholds: warning at 75% and critical at 85% of effective memory limits, incorporating hysteresis buffers before resuming. Idle browser worker shutdown threshold is recommended at 60 seconds, resuming from persisted states when needed.
 
-Live user browser approval চললে idle shutdown blindly প্রয়োগ নয়; bounded interactive lease থাকবে। Kill switch নতুন কাজ থামাবে; already-performed external action undo করবে না।
+If an active user session requires browser-based approval, do not trigger idle shutdowns abruptly; maintain bounded interactive leases. Emergency kill switches halt pending jobs immediately; they cannot reverse external platform actions that have already executed.
 
 ---
 
-## 15. Redis, PostgreSQL এবং Meilisearch controls
+## 15. Redis, PostgreSQL, and Meilisearch controls
 
 ### Redis
 
-আগের blueprint-এর **Redis Streams** থাকবে; BullMQ/Asynq-এর private formats mix করবে না। PostgreSQL outbox authoritative। Consumers small batches claim করবে, acknowledgement durable completion-এর পরে।
+Maintain the existing architecture's **Redis Streams** pipeline; do not introduce conflicting proprietary queue formats. The PostgreSQL outbox remains the authoritative source of truth. Workers process small, bounded message batches and acknowledge only after durable transaction completion.
 
-Control/queue Redis-এ `noeviction` policy প্রস্তাবিত, যাতে memory pressure-এ locks/queues silently evict না হয়। `noeviction` memory full হলে writes reject করতে পারে; application সেটি handle করে new dispatch pause করবে। [S10]
+Configure queue and lock instances with a `noeviction` policy so memory pressure does not silently drop locks or queue payloads. Under `noeviction`, Redis rejects writes when capacity is exhausted; the application must handle this by pausing new task dispatches cleanly. [S10]
 
-শুধু আলাদা Redis database number ব্যবহার করলেই eviction policy আলাদা হয় না। Cache growth-এ explicit TTL/size eviction application-controlled হবে; প্রয়োজন হলে পরে separate cache instance। Stream trim করার আগে consumer/pending state ও durable PostgreSQL recovery নিশ্চিত করতে হবে। `MAXLEN` blindly pending work মুছে দিতে পারবে না।
+Selecting different Redis database numbers does not isolate eviction policies. Expire cache entries using explicit application-level TTLs and size policies; provision separate Redis instances for caching if workloads dictate. Before trimming streams, verify that consumer acknowledgments and PostgreSQL state are synchronized; `MAXLEN` must never truncate pending, unacknowledged jobs.
 
 ### PostgreSQL
 
-Runs/usage/reference metadata relational tables-এ; large media/base64 নয়। Paginated reads, limited SQL columns, indexed tenant/time filters, short transactions এবং aggregate metrics table থাকবে। Every token delta database row হিসেবে save নয়; bounded progress batching করবে। Usage finalization idempotent হবে।
+Persist runs, usage metrics, and entity references in relational tables; never store large media binaries or base64 blobs in rows. Enforce paginated queries, restricted column projections, composite tenant/timestamp indexes, brief transaction lifecycles, and aggregated reporting tables. Avoid persisting individual token deltas per row; batch incremental progress updates. Ensure usage settlement operations are strictly idempotent.
 
 ### Meilisearch
 
-Only searchable selected fields index করবে। Raw resumes, full private inbox বা entire crawling HTML corpus নয়। Go facade query/results/facets authorize করবে; deletion tombstone eventual indexing lag-এও hydration block করবে।
+Index only explicitly designated searchable fields in Meilisearch. Never index raw resumes, complete private inboxes, or full scraped HTML documents. The Go service facade must authorize search queries and facet filters; tombstone records ensure deleted entities are not hydrated even during indexing latency.
 
-Configure indexing threads এবং indexing-memory budget explicitly; এই budget total process RAM ceiling নয়। Actual settings pinned version-এর official configuration reference অনুযায়ী যাচাই করবে। [S11]
+Explicitly configure indexing threads and memory allocations; note that this indexing budget is distinct from total process RAM limits. Validate actual deployment configurations against the pinned documentation for your Meilisearch release. [S11]
 
 ---
 
@@ -542,7 +542,7 @@ Configure indexing threads এবং indexing-memory budget explicitly; এই b
 | Source of pressure | Required control |
 |---|---|
 | Repeated resume upload | Upload once, record content hash, reuse owner-scoped document ID; do not create cross-user existence oracle। |
-| File transfer through multiple services | Direct authorized storage upload/download যেখানে সম্ভব; streamed transfer এবং bounded temp files। |
+| Inter-service file transfers | Utilize direct signed storage upload/download URLs where possible; enforce streamed chunking and bounded temporary file storage. |
 | Oversized AI prompts | Clean text, selected facts, small evidence snippets; no raw HTML/base64 without task need। |
 | Document/image vision | Only necessary pages/crops; explicit opt-in; text extraction first। |
 | Browser loading | Only needed page/resources; unnecessary video/ads/preloads off where task permits। |
@@ -567,49 +567,49 @@ Configure indexing threads এবং indexing-memory budget explicitly; এই b
 | Thumbnail | 250 KiB target |
 | Research evidence | Up to 5 selected pages in initial Economy run |
 
-বড় legitimate files/tasks silently crop না করে separate large-task profile ও estimate ব্যবহার করবে। Token budget এবং byte budget আলাদা; compressed size ছোট হলেই decompressed payload safe নয়। PDF/DOCX parser quarantine, page/time limits এবং OCR pixel limitsও থাকবে।
+Never silently truncate large, legitimate input documents; route them to a dedicated large-document pipeline with explicit cost estimates. Token and byte budgets are separate constraints; small archive sizes do not guarantee safe decompressed payloads. Enforce document parser sandboxing, page and processing time limits, and image pixel dimension constraints for OCR.
 
-OCR শুধু text extraction insufficient হলে প্রয়োজনীয় pages-এ; initial batch 5 pages, expanded processing opt-in। User না চাইলে manual entry fallback থাকবে।
+Trigger OCR only when deterministic text extraction yields insufficient content, processing only necessary pages (initial batch of 5 pages, requiring user confirmation for further processing). Provide a manual text entry fallback if the user opts out of OCR.
 
 ### 16.2 Progress streaming
 
-SSE typing experience উন্নত করতে পারে, কিন্তু streaming নিজে generated token bill কমায় না। Provider generation stream-এ partial output আসে; application reconnect/cancel behavior নিজে implement করতে হবে। [S12]
+Server-Sent Events (SSE) provide an interactive typing experience, but streaming does not reduce generated token billing. Provider streaming returns partial generation tokens; the gateway must handle client reconnection and cancellation mechanics reliably. [S12]
 
-Proposed client coalescing: 500 ms window, bounded buffer, 30-second keepalive। Slow client হলে buffer endlessly grow নয়; connection close করে saved state থেকে resume। Hidden tabs routine polling বন্ধ করবে। Result validation complete হওয়ার আগে streamed text-কে approved artifact হিসেবে save নয়।
+Recommended client coalescing: 500 ms debounce window, bounded buffer, and 30-second keep-alive heartbeats. For slow clients, prevent buffers from growing unboundedly; terminate lagging connections and resume from persisted states. Background browser tabs must suspend routine polling. Never persist raw streamed text as an approved artifact until final schema validation completes.
 
 ### 16.3 Bandwidth visibility
 
-Track: provider request/response bytes, remote fetch bytes, browser bytes, user uploads/downloads এবং media transfer আলাদা dimensions। Payload bytes এবং cloud invoice egress এক জিনিস নয়; TLS/proxy/storage/CDN overhead বা unobserved paths আলাদা হতে পারে। Missing measurement-এ `unknown` দেখাবে, zero নয়।
+Track network metrics across distinct dimensions: provider request/response bytes, remote scraping bytes, browser worker transfers, user uploads/downloads, and media payload bytes. Application payload bytes differ from cloud provider egress bills due to TLS framing, proxy headers, CDN overhead, and internal routing. Display `unknown` rather than misleading zero values if measurements are unobserved.
 
 ---
 
-## 17. Browser, OCR ও media workers
+## 17. Browser, OCR, and media workers
 
-এই components logical AI agents নয়। তারা isolated tools; AI gateway shared typed task contract দিয়ে প্রয়োজন হলে dispatch করবে। Browser account access permission এই architecture বদলায় না।
+These components are not autonomous AI agents; they are isolated execution tools. The AI gateway dispatches tasks to them using typed contracts only when explicitly necessary. Account permissions and browser security policies are maintained without alteration.
 
-Browser navigation default-এর অংশ নয়: permitted API বা stored/imported data থাকলে সেটি ব্যবহার করবে। Authentication page, private profile ও live session-এর sensitive screenshots normal logs-এ থাকবে না। Continuous live video streaming default off; explicit user session viewing এবং limited lifetime লাগবে।
+Browser navigation is not a default pipeline: prioritize official authorized APIs or imported datasets whenever available. Sensitive screenshots from authentication pages, private profiles, or active sessions must never be written to general logs. Continuous live video feeds are disabled by default, requiring explicit interactive user sessions with time-bounded leases.
 
-Media workflow প্রথমে text brief/script; user approve করলে estimated media cost/resource reservation; তারপর selected provider। Prompt-only success-কে generated image/video success বলা যাবে না। Audio/video jobs text-token budget থেকে hidden billing করবে না; seconds/images/render-minutes আলাদাভাবে meter করবে।
+Media pipelines begin by generating text briefs or scripts. Dispatches to media providers occur only after the user approves explicit cost estimates and resource reservations. Successfully sending a prompt does not constitute a completed media asset. Audio and video generation must not draw from text token quotas; track media units transparently as duration seconds, image counts, or rendering minutes.
 
-Local model option advanced self-host setting। One loaded model, one parallel request, bounded context এবং idle unload policy দিয়ে শুরু করবে; model download/runtime footprint আলাদাভাবে measure করবে। App web/API host-এ automatically large model download নয়। Provider/local endpoint reachable না হলে manual workflow থাকবে।
+Local model deployment is an advanced, self-hosted operational configuration. Constrain local execution to a single loaded model, single concurrency, bounded context windows, and automated idle unloading; track model download size and runtime memory footprints separately. Never automatically download large model weights onto primary web/API servers. Ensure manual workflows remain functional if endpoints are unreachable.
 
 ---
 
-## 18. Prompt, tool ও factual safety
+## 18. Prompt, tool, and factual safety
 
-Prompts versioned source files হবে; all 28 upstream repositories বা complete product blueprint runtime prompt-এ ঢোকানো যাবে না। Only selected task instructions/schema/reference facts load হবে।
+Prompts must be maintained as versioned source files; never inject large raw repository contexts or full blueprints into runtime prompts. Ingest only the specific task instructions, schemas, and verified reference facts required for execution.
 
-User resume, scraped page, job description ও messages **data**, system instruction নয়। এগুলোর embedded instruction দিয়ে permissions, model routing, credential host, SQL, file path বা outbound recipient বদলানো যাবে না। Allowed tools typed এবং server-validated।
+Candidate resumes, scraped job postings, job descriptions, and messages are **untrusted data**, not system instructions. Embedded directives within these inputs must never alter user permissions, model routing, credential hosts, database queries, file paths, or message recipients. All available tools must be strictly typed and validated server-side.
 
-AI SQL/shell/database credentials পাবে না। Gateway নতুন APIs/function definitions internet থেকে auto-install করবে না। Internal endpoints owner/resource scope reauthorize করবে। Tool parameter-এর URL/source কেবল allowlisted task context থেকে।
+AI models must never receive direct SQL credentials, shell execution access, or database administrative privileges. The gateway must never dynamically auto-install third-party APIs or tool definitions from the internet. Internal function endpoints re-authorize ownership and tenant scope independently. Tool arguments specifying URLs or data sources must strictly derive from allowlisted task contexts.
 
-Output validators আলাদা করবে: schema validity, field completeness, source traceability, factual consistency এবং editorial preference। Fact missing হলে question; output cut off হলে incomplete; provider refused হলে refusal। Short reasoning summary চাওয়া যাবে, কিন্তু লম্বা hidden reasoning transcript prompt/output requirement নয়।
+Output validators independently verify: schema validity, field completeness, source traceability, factual consistency, and editorial style. Missing facts trigger clarifying questions; truncated completions are marked incomplete; model refusals are reported transparently. Short reasoning summaries may be requested, but unbounded hidden reasoning traces must not be mandated in prompts or outputs.
 
 ---
 
 ## 19. Data model extensions
 
-Existing shared credentials, workflow এবং usage tables reuse করবে; নতুন overlapping ledger তৈরি নয়। নিচের names indicative migrations, currently existing table দাবি নয়।
+Reuse existing relational credential, workflow, and usage schemas; do not create duplicate or overlapping ledger tables. The table definitions below illustrate target migration schemas rather than already deployed structures.
 
 | Entity | Purpose / key fields |
 |---|---|
@@ -625,7 +625,7 @@ Existing shared credentials, workflow এবং usage tables reuse করবে;
 | `ai_evaluation_runs` | synthetic cases, model/prompt revision, expected checks, measured results |
 | `ai_resource_events` | limited metrics for queue, RAM, network, execution time and backpressure |
 
-Secrets encrypted vault-এ, artifacts object storage-এ। Agent labels/profile facts/package name metric label বানিয়ে high-cardinality telemetry বাড়াবে না। Large record histories paginated/retention controlled হবে।
+Store secrets in an encrypted credential vault and media artifacts in object storage. Avoid transforming arbitrary agent labels, profile attributes, or package names into high-cardinality telemetry tags. Large execution logs must be paginated and subject to retention pruning policies.
 
 ### 19.1 Provider adapter contract — Go design sketch
 
@@ -639,11 +639,11 @@ type ProviderAdapter interface {
 }
 ```
 
-`ListModels`, token-count endpoint, batch execution ও cancellation সব provider-এ mandatory নয়; optional capability interfaces হবে। `Generate` budget enforce করবে এবং incomplete usage report করতে পারবে। HTTP transport settings, auth injection ও SSRF protections shared থাকবে।
+Capabilities like `ListModels`, token counting endpoints, batch execution, and cancellation are not universally available across all providers; model them as optional capability interfaces. The core `Generate` method enforces budget bounds and accurately reports partial usage. HTTP transport configurations, authentication injection, and SSRF mitigations remain shared.
 
 ---
 
-## 20. API contracts এবং UI behavior
+## 20. API contracts and UI behavior
 
 | Method / route | Purpose |
 |---|---|
@@ -664,15 +664,15 @@ type ProviderAdapter interface {
 | `POST /api/v1/ai/runs/{id}/cancel` | Stop future work; best-effort provider cancel |
 | `GET /api/v1/ai/usage` | Scoped aggregated usage with estimates distinguished |
 
-`estimate` কখনো provider count API ব্যবহার করলে তা generation নয়, কিন্তু network/rate allowance-এ counted হবে। API না থাকলে local conservative estimate। Arbitrary user-written prompt/proxy endpoint নয়; `task`, `resource_ids`, validated options পাঠাবে। Go অনুমোদিত data hydrate করবে।
+If `estimate` queries a provider token-counting endpoint, it is not a generation request but counts against network and rate limits. If no such endpoint exists, apply a conservative local estimate. The gateway does not expose an arbitrary prompt proxy; clients send `task`, `resource_ids`, and validated parameters, and the Go backend hydrates authorized data.
 
-**Run status:** `queued`, `running`, `needs_input`, `needs_review`, `budget_blocked`, `resource_wait`, `failed`, `cancel_requested`, `cancelled`, `completed`। Provider usage settlement status আলাদা field, যাতে completed artifact-এর accounting pending থাকতে পারে।
+**Run status values:** `queued`, `running`, `needs_input`, `needs_review`, `budget_blocked`, `resource_wait`, `failed`, `cancel_requested`, `cancelled`, and `completed`. Provider usage reconciliation status is tracked in a separate field, allowing completed artifacts to remain pending reconciliation.
 
 ---
 
 ## 21. Proposed configuration example
 
-এই YAML intended configuration contract; parser/validation এখনো implement হয়নি। Production monetary values operator-এর সিদ্ধান্ত ছাড়া activate হবে না। Secrets এই file-এ নয়।
+This YAML illustrates the intended configuration schema; the parser and validation routines are specifications. Production monetary thresholds must not be activated without operator confirmation. Secret credentials must never be stored in this file.
 
 ```yaml
 ai:
@@ -749,45 +749,45 @@ ai:
     cross_tenant_cache: false
 ```
 
-`null` অর্থ production monetary policy configured নয়; unlimited নয়। Platform-managed route সেক্ষেত্রে blocked। Personal BYOK token-only mode চাইলে explicit আলাদা policy/consent লাগবে। Per-task settings section 9 থেকে routes-এ resolve হবে; global defaults task-specific safety caps override করবে না।
+`null` indicates that no production monetary policy has been configured—it does not imply unlimited spend. Platform-managed routes in this state are blocked. Operating personal BYOK in token-only tracking mode requires explicit user consent and separate policies. Per-task limits resolve against Section 9 routing rules; global defaults must never override task-specific safety caps.
 
 ---
 
-## 22. Dashboard metrics ও tooltips
+## 22. Dashboard metrics and tooltips
 
 ### User view
 
-Active provider/model, payer, run estimate, input/output usage, remaining allowance, cache reused badge, generation version, waiting reason এবং stop control। নিজের API key ব্যবহারে “provider-billed usage estimate” label থাকবে।
+Active provider/model, billing entity, run estimates, input/output token usage, remaining allowance, cache hit indicators, artifact version, queue state, and abort controls. When BYOK credentials are used, display a "Provider-billed usage estimate" disclaimer.
 
 ### Admin view
 
-Workspace spend/reservations, quotas, shared provider health, queue pressure, allowed models এবং task-level aggregated outcomes। Private resume/prompts default visible নয়।
+Workspace expenditure and reservations, allocation quotas, shared provider health status, queue depth, approved models, and task-level aggregated outcomes. Candidate resumes and private prompts remain hidden by default.
 
 ### Super Admin view
 
-Platform aggregate usage, connection error classes, resource saturation, price-card age, pending reconciliation, adapter verification এবং kill switches। “Monitoring” করার জন্য every prompt log নয়।
+Platform-wide aggregate usage, categorized connection errors, hardware resource saturation, price-card validity ages, pending reconciliation counts, adapter verification results, and emergency kill switches. Do not log raw prompt contents for routine monitoring.
 
 ### Useful tooltips
 
-> **Economy mode:** “আগে rules ও saved result ব্যবহার হবে। AI দরকার হলে এই task-এর জন্য পরীক্ষিত কম-খরচের model নেওয়া হবে।”
+> **Economy mode:** "Prioritizes deterministic rules and cached outputs first. When AI is necessary, routes to the most cost-effective tested model for this specific task."
 
-> **Token limit:** “Input, instructions, schema এবং model-এর billable generation budget আলাদাভাবে ধরা হচ্ছে। ছোট উত্তর হলেও reasoning usage থাকতে পারে।”
+> **Token limit:** "Inputs, system instructions, schemas, and model generation limits are accounted for separately. Short completions may still consume reasoning token budgets."
 
-> **Cache reused:** “এই input/version-এর আগের result ব্যবহার করা হয়েছে; নতুন generation call করা হয়নি।”
+> **Cache reused:** "Served existing verified results for this input version; no new model generation call was dispatched."
 
-> **API spend:** “এটি এই app-এর tracked usage estimate। একই key অন্য app-এ ব্যবহার করলে provider bill বেশি হতে পারে।”
+> **API spend:** "Represents usage tracked through this application only. If this credential is used across other platforms, provider invoices will differ."
 
-> **Low-RAM mode:** “একসঙ্গে কম কাজ চলবে। কিছু কাজ queue-তে অপেক্ষা করবে, কিন্তু local model বা browser অকারণে চালু হবে না।”
+> **Low-RAM mode:** "Restricts concurrent task executions. Non-urgent background jobs wait in queue to prevent unnecessary local model loading or headless browser instances."
 
-> **Cancel:** “পরবর্তী কাজ থামবে। Provider ইতোমধ্যে request process করলে সেই usage charge থাকতে পারে।”
+> **Cancel:** "Halts subsequent execution stages. If the provider has already processed the request upstream, usage charges may still apply."
 
-> **Custom API:** “API format, endpoint, model ও security rules compatible হলে ব্যবহার করা যাবে। শুধু key থাকলেই সব capability পাওয়া যায় না।”
+> **Custom API:** "Can be used if the API format, endpoint, model ID, and security parameters are fully compatible. Valid credentials do not guarantee all platform capabilities are supported."
 
 ---
 
 ## 23. Implementation task list
 
-সব নিচের software task **TODO**। Existing `TASKS.md`-এ নতুন `AIARC-*` prefix ব্যবহার করবে; `FND-*` IDs renumber নয়।
+All listed software tasks are **TODO**. Integrate them into existing `TASKS.md` under the `AIARC-*` prefix; do not renumber existing `FND-*` task IDs.
 
 | Task | Work | Dependencies | Acceptance evidence |
 |---|---|---|---|
@@ -810,7 +810,7 @@ Platform aggregate usage, connection error classes, resource saturation, price-c
 | AIARC-017 | Security, correctness and cost regression suite | AIARC-011, AIARC-012, AIARC-013, AIARC-014 | AI-AT checks below; actual reports |
 | AIARC-018 | Blueprint integration and documented handoff | AIARC-001 | Add links/requirements/tasks; PROGRESS reflects actual work only |
 
-**প্রথম AI vertical slice:** add one compatible provider → test with synthetic input → manually confirmed profile → one budgeted resume suggestion → review → measured usage → repeat identical request returns existing result। Live LinkedIn action প্রয়োজন নেই।
+**Initial AI vertical slice:** Configure one compatible provider → verify via synthetic test probe → confirm candidate profile manually → generate one budgeted resume tailoring suggestion → review output → track usage → verify identical repeat request serves cached result. Live LinkedIn interactions are not required.
 
 ---
 
@@ -818,46 +818,46 @@ Platform aggregate usage, connection error classes, resource saturation, price-c
 
 | ID | Required test |
 |---|---|
-| AI-AT-001 | Personal credential অন্য user/Admin API response, logs, HTML বা exports-এ প্রকাশ পায় না। |
-| AI-AT-002 | Unapproved endpoint, redirect, metadata IP ও DNS rebinding route blocked। |
-| AI-AT-003 | Base-URL change পুরোনো credential অন্য host-এ পাঠায় না। |
+| AI-AT-001 | Personal credentials are never exposed in other users' or admin API responses, application logs, HTML markups, or export files. |
+| AI-AT-002 | Unapproved origins, HTTP redirects, cloud metadata IP destinations, and DNS rebinding requests are strictly blocked. |
+| AI-AT-003 | Updating an endpoint base URL never forwards previously stored credentials to unverified hosts. |
 | AI-AT-004 | Ten concurrent identical submissions produce one logical run and at most one initial dispatch। |
 | AI-AT-005 | Different owners/profile versions cannot reuse private cached output। |
-| AI-AT-006 | Budget-এর চেয়ে বড় reservation হলে কোনো provider call হয় না। |
-| AI-AT-007 | Concurrent requests aggregate payer limit অতিক্রম করে admit হয় না। |
-| AI-AT-008 | Reasoning/cache input accounting nested totals double count করে না। |
-| AI-AT-009 | Timeout after dispatch keeps usage pending; blind fallback/zero-cost refund নয়। |
-| AI-AT-010 | Retry/repair/fallback সব একই run-এর attempt এবং cost budget consumes করে। |
-| AI-AT-011 | Provider capability mismatch clear error দেয়; silently ignored caps নয়। |
-| AI-AT-012 | Bengali/English long-input fixtures token/byte caps মানে; partial extraction honest। |
-| AI-AT-013 | Unknown career fact generated answer হিসেবে confirmed হয় না। |
-| AI-AT-014 | AI-generated permission flag দিয়ে message/apply/publish execute হয় না। |
-| AI-AT-015 | Refresh/SSE reconnect/new tab কোনো নতুন paid generation শুরু করে না। |
-| AI-AT-016 | Slow SSE consumer bounded memory রাখে এবং recoverable disconnect হয়। |
-| AI-AT-017 | Redis full/restart-এ budgets/runs হারায় না; recovery duplicates paid request করে না। |
-| AI-AT-018 | Browser/OCR/media default disabled অথবা explicit resource-admitted; no surprise model download। |
-| AI-AT-019 | Memory pressure-এ heavy queue pauses; ordinary forms/tracking work করে। |
-| AI-AT-020 | Byte/zip/page limits malicious/oversized input reject করে; parser memory bounded। |
-| AI-AT-021 | Revoked consent/key এবং deleted data queued work/cache থেকে কার্যকরভাবে removed। |
-| AI-AT-022 | No AI key/budget exhaustion হলেও deterministic profile edit, CSV ও existing resume export চলে। |
-| AI-AT-023 | Model routing benchmark includes factual accuracy/schema success/Bangla quality, শুধু token price নয়। |
-| AI-AT-024 | Advanced/media workflow estimated payer/cost/resources দেখিয়ে explicit approval নেয়। |
+| AI-AT-006 | If a required budget reservation exceeds the remaining allowance, external provider calls are rejected immediately. |
+| AI-AT-007 | Concurrent requests that collectively exceed payer spending caps are blocked from admission. |
+| AI-AT-008 | Token accounting for reasoning and cached inputs does not double-count nested total usage figures. |
+| AI-AT-009 | Network timeouts occurring after dispatch mark usage as pending reconciliation; blind retries or immediate refunds are prohibited. |
+| AI-AT-010 | Retries, schema repair passes, and fallback invocations consume from the same unified run attempt and cost budgets. |
+| AI-AT-011 | Incompatibilities in provider capabilities return explicit, descriptive errors rather than silently ignoring safety caps. |
+| AI-AT-012 | Mixed Bengali/English long inputs adhere to token and byte boundaries; partial extractions are flagged honestly. |
+| AI-AT-013 | Model-generated hallucinations or unknown candidate facts are never recorded as confirmed profile records. |
+| AI-AT-014 | AI-generated flags or parameters cannot bypass human approval gates to execute messages, job applications, or social posts. |
+| AI-AT-015 | Page refreshes, SSE reconnects, or opening duplicate browser tabs do not trigger duplicate paid generation cycles. |
+| AI-AT-016 | Lagging SSE consumers maintain bounded server memory buffers and disconnect safely with recoverable state markers. |
+| AI-AT-017 | Redis memory exhaustion or restart does not corrupt persistent budgets or runs; recovery routines never duplicate paid requests. |
+| AI-AT-018 | Headless browser, OCR, and media workers are disabled by default and require explicit resource admission; models never auto-download. |
+| AI-AT-019 | Under high memory pressure, heavy background queues are paused while standard form editing and tracking remain operational. |
+| AI-AT-020 | Byte, archive, and page length restrictions reject oversized or malicious files, keeping parser memory bounded. |
+| AI-AT-021 | Revoking credentials or deleting user data promptly purges pending queued jobs and associated cache entries. |
+| AI-AT-022 | Absence of AI credentials or exhausted budgets does not prevent manual profile edits, CSV imports, or deterministic resume exports. |
+| AI-AT-023 | Model routing benchmarks evaluate factual correctness, schema compliance, and multilingual quality, not merely token unit prices. |
+| AI-AT-024 | Advanced media pipelines require explicit human confirmation displaying estimated costs, payer identity, and resource allocations. |
 
-**Load-test report-এ যা measure করবে:** p50/p95 latency, peak/RSS per process, CPU, queue wait, provider calls per completed task, input/generation tokens, exact-cache hit rate, observed bytes, timeout/repair rate ও unresolved billing count।
+**Metrics required in load-test reports:** p50 and p95 latency, peak/RSS memory per process, CPU utilization, queue dwell time, provider calls per completed task, input/output tokens, exact-match cache hit rates, observed network bytes, timeout and repair rates, and unresolved billing counts.
 
-Fixtures synthetic হবে; credentials ও real resumes version control-এ নয়। Unit/contract/load tests documentation creation-এর অংশ হিসেবে run হয়েছে বলে দাবি করা যাবে না।
+Test fixtures must use synthetic data; real resumes and credentials must never enter version control. Automated unit, contract, and load test suites must be verified through actual test runner execution rather than assumed.
 
 ---
 
-## 25. Existing blueprint-এ integration এবং coder handoff
+## 25. Integration with existing blueprints and developer handoff
 
 | Existing file | Required update during integration |
 |---|---|
-| `README.md` | এই file-এর link এবং AI-provider setup/read order যোগ করবে। Five-file pack থেকে extension আছে তা জানাবে। |
+| `README.md` | Reference this document, document AI provider setup workflows, and clarify that it extends the core documentation suite. |
 | `CONTEXT.md` | REQ-AI-001–REQ-AI-012 append; dashboard BYOK scopes, Economy default, no direct AI side effects। |
 | `PLAN.md` | Gateway inside Go modular monolith, capability adapters, durable spend reservations, bounded resources add। |
 | `TASKS.md` | AIARC-001–AIARC-018 append; existing IDs/dependencies preserve; AI-AT mapping include। |
-| `PROGRESS.md` | Document added বনাম software implemented আলাদা; actual task/test/provider status লিখবে। |
+| `PROGRESS.md` | Distinguish architectural specification from code implementation; record actual task execution and test evidence. |
 
 ### Architecture decisions to record
 
@@ -895,7 +895,7 @@ remaining risks, resource measurements and the next exact task ID.
 
 ---
 
-## 26. Sources এবং verification boundaries
+## 26. Sources and verification boundaries
 
 Prepared against the supplied five-file blueprint and the user's current requirements. Official references below were checked on **2026-09-17**. Provider names, interfaces, pricing and limits must be rechecked when implementing/pinning actual versions. No commercial pricing figures, token savings percentage, RAM benchmark or live API success is asserted here.
 
@@ -929,4 +929,4 @@ Prepared against the supplied five-file blueprint and the user's current require
 | [S12 — OpenAI streaming][S12] | Incremental API response delivery; not a promise of lower generation usage। |
 | [S13 — Gemini caching][S13] | Cache behavior depends on model and API path। |
 
-**Completion state:** Architecture document delivered. Software implementation, real provider connections, API charges, tests of the future application এবং deployment এখনো এই document দ্বারা সম্পন্ন হয়নি।
+**Completion state:** Architectural specification delivered. Software implementation, live provider integrations, billing charges, application automated tests, and production deployment are not performed by this specification document.

@@ -168,21 +168,21 @@ Backend permission is the first gate. Then enforce the minimum of package allowa
 
 Use rolling 24-hour and seven-day windows where appropriate; provider endpoint windows may be per-minute or different. The UI can display “today” in the user's timezone but cannot reset provider counters at local midnight. Reconnecting, switching modules/workspaces or changing a plan must not reset an account-wide budget. Keep recruiter outreach inside message budgets. Include pending reserved operations when calculating remaining allowance.
 
-### 8.3 Tooltips and banners (Bangla UI copy)
+### 8.3 Tooltips and banners (Safety and guidance copy)
 
 | UI element | Tooltip / message |
 |---|---|
-| Connection limit | “এটি এই অ্যাপের নির্ধারিত সীমা, LinkedIn-এর নিরাপদ বা অনুমোদিত দৈনিক সীমা নয়। কম request পাঠালেও restriction হতে পারে।” |
-| Follow limit | “এই সীমা শুধু অ্যাপে রেকর্ড হওয়া কাজের জন্য। বারবার follow/unfollow করবেন না; platform warning পেলে কাজ বন্ধ করুন।” |
-| Direct message limit | “সব campaign ও recruiter message একই messaging limit-এর মধ্যে গণনা হবে। প্রাপকের সম্মতি ও platform permission প্রয়োজন।” |
-| Recruiter outreach | “এটি Direct Message limit-এর অংশ—আলাদা অতিরিক্ত message allowance নয়।” |
-| Automated action disabled | “এই action-এর অনুমোদিত integration পাওয়া যায়নি। Draft তৈরি করে platform-এ নিজে review ও complete করুন।” |
-| Safety notice | “কোনো tool, proxy বা daily limit account block/suspend না হওয়ার নিশ্চয়তা দেয় না।” |
-| Counter coverage | “এই সংখ্যা শুধু আমাদের অ্যাপে রেকর্ড হওয়া কাজ দেখায়; platform-এ সরাসরি করা সব কাজ এখানে দেখা নাও যেতে পারে।” |
-| Social publishing | “Publish করার আগে account permission, media format ও platform limit পরীক্ষা করা হবে। Schedule করা মানেই publish নিশ্চিত নয়।” |
-| Needs confirmation | “Submit-এর ফল নিশ্চিত করা যায়নি। Duplicate এড়াতে আবার submit না করে আগে status যাচাই করুন।” |
-| Pause | “এই account-এর pending action বন্ধ আছে। Warning বা permission সমস্যার সমাধান না হওয়া পর্যন্ত কাজ চালু হবে না।” |
-| Package upgrade | “Package upgrade resource quota বাড়াতে পারে; platform permission বা account safety limit পরিবর্তন করে না।” |
+| Connection limit | "Internal platform rate budget; not an endorsement of LinkedIn safe limits. Actions are throttled to prevent restrictions." |
+| Follow limit | "App-recorded action counters only; cease activities immediately if platform warnings are encountered." |
+| Direct message limit | "All outreach and direct messaging shares the unified rate budget. Recipient consent and valid OAuth permissions required." |
+| Recruiter outreach | "Counts toward the Direct Message limit—not an independent or extra message allowance." |
+| Automated action disabled | "No authorized integration available for this action. Please generate a draft and review/complete it directly on the platform." |
+| Safety notice | "No third-party tool, proxy, or daily limit guarantees immunity from platform enforcement or suspension." |
+| Counter coverage | "Displays operations tracked within this platform only; direct actions taken externally may not be reflected." |
+| Social publishing | "Account permissions, media formats, and platform limits will be rechecked prior to publishing. Scheduling does not guarantee successful posting." |
+| Needs confirmation | "Operation outcome could not be verified. Please check status before retrying to prevent duplicate actions." |
+| Pause | "Pending operations for this account are halted. Activity will not resume until warnings or permission errors are resolved." |
+| Package upgrade | "Upgrading expands resource quotas; it does not override external platform permissions or account safety limits." |
 
 ### 8.4 Enforcement and recovery
 
