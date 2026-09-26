@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LinkedInPostWritingFixture",
+  "description": "Groundtruth test fixtures for LinkedIn post drafting, hook templates, editorial audits without buzzword slop or fake virality guarantees, cryptographic HMAC approval, tamper invalidation, and cross-tenant isolation",
+  "scenarios": {
+    "distributed_systems_contrarian_post": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "topic": "Microservices vs Modular Monolith",
+      "angle": "contrarian_insight",
+      "verified_facts": [
+        "Reduced p99 latency from 450ms to 32ms by consolidating distributed services",
+        "Led architecture team migrating 28 chatty services back into a modular Go monolith",
+        "Decreased infrastructure cloud bill by 42% in 6 months"
+      ],
+      "expected_hooks": [
+        {
+          "hook_type": "contrarian",
+          "hook_text": "Most teams adopt microservices to solve organizational problems, but end up creating distributed state disasters.",
+          "rationale": "Directly confronts industry bias with engineering pragmatism"
+        },
+        {
+          "hook_type": "data_scale",
+          "hook_text": "We dropped our p99 latency from 450ms to 32ms. The secret? Deleting 28 microservices.",
+          "rationale": "Anchored strictly in verified candidate latency and architecture facts"
+        },
+        {
+          "hook_type": "question",
+          "hook_text": "Is your distributed architecture actually scaling your product, or just multiplying network hops?",
+          "rationale": "Piques technical curiosity around latency overhead"
+        },
+        {
+          "hook_type": "story",
+          "hook_text": "In 2024, our on-call rotation spent 60% of their time debugging network timeouts between services that never should have been separated.",
+          "rationale": "Empathetic real-world incident context"
+        },
+        {
+          "hook_type": "punchy",
+          "hook_text": "A modular monolith beats a premature microservice architecture 9 times out of 10.",
+          "rationale": "Concise, high-signal opener"
+        }
+      ],
+      "expected_audit": {
+        "passed": true,
+        "readability_score_min": 70,
+        "character_count_max": 3000,
+        "buzzword_violations_count": 0,
+        "false_guarantee_violations_count": 0
+      }
+    },
+    "career_transition_lessons_post": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "topic": "Engineering Leadership Journey",
+      "angle": "lesson_learned_breakdown",
+      "verified_facts": [
+        "Promoted 4 times across 6 years at FinTech Corp",
+        "Created internal reliability academy training 150+ engineers",
+        "Maintained 99.99% system availability through 3 Black Friday peaks"
+      ],
+      "expected_hooks": [
+        {
+          "hook_type": "story",
+          "hook_text": "6 years ago, I thought great engineering was just writing clever code. 4 promotions later, I realized it's about making others better.",
+          "rationale": "STAR reflection grounded in verified career promotions"
+        }
+      ],
+      "expected_audit": {
+        "passed": true,
+        "character_count_min": 300,
+        "character_count_max": 2500
+      }
+    },
+    "buzzword_and_false_guarantee_violation": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "topic": "Hype-driven Post",
+      "angle": "contrarian_insight",
+      "verified_facts": [
+        "Software engineer with 3 years backend experience"
+      ],
+      "violating_post_text": "I am a 10x rockstar engineer using cutting-edge synergy and paradigm shifts to disrupt the industry! Guaranteed 100k impressions on LinkedIn with our viral secret formula, and 100% bypass AI detectors guaranteed! Scaled users by 99999% overnight.",
+      "expected_audit": {
+        "passed": false,
+        "expected_violations": [
+          "hollow_buzzwords",
+          "forbidden_virality_claim",
+          "forbidden_ai_bypass_claim",
+          "unverified_metric"
+        ]
+      }
+    },
+    "tamper_invalidation_and_multi_tenant": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "initial_status": "draft",
+      "approved_status": "approved",
+      "tampered_status": "draft",
+      "beta_workspace_id": "ws-beta",
+      "beta_tenant_id": "tenant-beta",
+      "expected_auto_publish_error": "posts: autonomous unreviewed post publishing permanently barred under platform integrity policy (AT-010, REQ-015, LI-11)"
+    }
+  }
+}

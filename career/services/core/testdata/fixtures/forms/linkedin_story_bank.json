@@ -1,0 +1,153 @@
+{
+  "scenarios": [
+    {
+      "id": "distributed_systems_outage_story",
+      "description": "Technical scar and failure retrospective detailing a cascading Redis failure, recovery actions, and P99 latency remediation grounded in verified infrastructure facts",
+      "workspace_id": "ws-alpha",
+      "entry": {
+        "id": "story-redis-cascade-01",
+        "workspace_id": "ws-alpha",
+        "title": "The Redis Cluster Meltdown: How a 2-second Network Blip Taught Us Asynchronous Resilience",
+        "category": "scar_or_failure",
+        "provenance": {
+          "source_type": "interview_session",
+          "interview_session_id": "sess-interview-alpha-01",
+          "author_name": "Elena Rostova",
+          "grounded_fact_ids": [
+            "fact-infra-01",
+            "fact-uptime-02"
+          ]
+        },
+        "narrative": {
+          "hook_summary": "At 2:14 AM, our primary cache cluster disintegrated because we trusted a synchronous cache-aside pattern on high-throughput checkout endpoints.",
+          "context_background": "During peak Q4 traffic, our checkout microservice sustained 45,000 QPS. Every request synchronously queried an in-memory Redis cluster for session entitlements.",
+          "challenge_conflict": "A momentary AWS cross-AZ network flap introduced 180ms latency. Because connection pool timeouts were set to 2000ms, all 240 Go worker routines blocked, exhausting application thread pools and creating a cascading collapse.",
+          "action_taken": "I took command of the incident bridge. We shed non-critical cache reads, instituted immediate 15ms circuit-breakers, and re-architected the checkout flow to validate cryptographic JWT claims locally with zero network I/O in the critical path.",
+          "quantified_outcome": "Reduced critical-path dependencies by 100%, improved P99 checkout latency from 280ms to 42ms, and protected 99.99% availability during subsequent failovers.",
+          "lesson_learned": "Never make a remote cache a synchronous dependency on your revenue-generating hot path. Assume every network call will eventually hang."
+        },
+        "tags": [
+          "incident-retrospective",
+          "distributed-systems",
+          "redis",
+          "latency-optimization"
+        ],
+        "approval_status": "draft"
+      },
+      "verified_facts": [
+        "45,000 QPS peak checkout traffic",
+        "180ms network latency flap",
+        "2000ms timeout",
+        "15ms circuit breakers",
+        "Reduced critical-path dependencies by 100%",
+        "P99 checkout latency from 280ms to 42ms",
+        "99.99% availability"
+      ]
+    },
+    {
+      "id": "career_turning_point_interview",
+      "description": "Guided interview session capturing a strategic transition from individual contributor to engineering architect",
+      "workspace_id": "ws-alpha",
+      "interview_session": {
+        "id": "sess-interview-alpha-02",
+        "workspace_id": "ws-alpha",
+        "category": "turning_point",
+        "status": "completed",
+        "questions_and_answers": [
+          {
+            "prompt_id": "prompt-tp-01",
+            "question": "What was the pivotal moment that convinced you to transition from deep individual coding to systems architecture and technical leadership?",
+            "candidate_answer": "We were rewriting our core billing service for the third time in two years because every previous team designed for their immediate sprint instead of domain boundaries. I realized writing clean code in one repo meant nothing if the systemic interfaces were broken.",
+            "follow_up_probe": "What concrete boundary did you establish first, and what was the cross-team result?",
+            "candidate_follow_up_answer": "I drafted the domain contract RFC for our billing events, unified 4 disparate ledger systems, and got alignment across 18 backend engineers in 3 weeks."
+          }
+        ],
+        "synthesized_story": {
+          "id": "story-arch-transition-02",
+          "title": "Why I Stopped Writing Code for Sprints and Started Designing Domain Contracts",
+          "category": "turning_point",
+          "provenance": {
+            "source_type": "interview_session",
+            "interview_session_id": "sess-interview-alpha-02",
+            "author_name": "David Miller",
+            "grounded_fact_ids": [
+              "fact-billing-rfc-01"
+            ]
+          },
+          "narrative": {
+            "hook_summary": "The third time our billing service had to be completely rewritten in 24 months, I realized individual coding velocity is a trap without architectural boundaries.",
+            "context_background": "Our hyper-growth platform had 18 backend engineers shipping across 4 siloed microservices, each with independent, uncoordinated billing state.",
+            "challenge_conflict": "Every team moved fast individually, but cross-service reconciliations required 3 days of manual data fixing every month.",
+            "action_taken": "I stepped up as lead architect, halted ad-hoc schema changes, defined an immutable transactional event contract, and drove cross-team alignment through an RFC process.",
+            "quantified_outcome": "Unified 4 billing ledgers into one source of truth and eliminated 100% of manual monthly reconciliation toil across the organization.",
+            "lesson_learned": "Architecture is not drawing diagrams; it is taking responsibility for the interfaces between human teams and distributed systems."
+          },
+          "tags": [
+            "career-transition",
+            "systems-architecture",
+            "domain-driven-design",
+            "leadership"
+          ],
+          "approval_status": "draft"
+        }
+      }
+    },
+    {
+      "id": "unverified_metric_hallucination_guard",
+      "description": "Story attempting to cite unsubstantiated revenue metrics and hallucinated percentages without candidate fact grounding",
+      "workspace_id": "ws-alpha",
+      "violating_entry": {
+        "id": "story-hallucinated-metrics-03",
+        "workspace_id": "ws-alpha",
+        "title": "How I Single-Handedly Multiplied Company Revenue Overnight",
+        "category": "breakthrough_win",
+        "provenance": {
+          "source_type": "manual_entry",
+          "author_name": "Unverified Candidate",
+          "grounded_fact_ids": []
+        },
+        "narrative": {
+          "hook_summary": "I optimized our database queries and generated a 500% profit explosion in 48 hours.",
+          "context_background": "Our application had slow queries.",
+          "challenge_conflict": "The team had no idea how to optimize Postgres.",
+          "action_taken": "I rewrote 3 SQL queries and added indexing.",
+          "quantified_outcome": "Produced an immediate $12M revenue windfall and 500% profit increase.",
+          "lesson_learned": "Query tuning drives immense revenue."
+        },
+        "tags": [
+          "exaggerated-metrics"
+        ],
+        "approval_status": "draft"
+      },
+      "candidate_groundtruth_facts": [
+        "Reduced Postgres CPU utilization by 22%",
+        "Average query latency dropped from 85ms to 18ms"
+      ],
+      "expected_audit_issues": [
+        {
+          "field": "quantified_outcome",
+          "metric": "$12M",
+          "severity": "blocking",
+          "message": "Metric '$12M' is not found in candidate verified career facts."
+        },
+        {
+          "field": "quantified_outcome",
+          "metric": "500%",
+          "severity": "blocking",
+          "message": "Metric '500%' is not found in candidate verified career facts."
+        }
+      ]
+    },
+    {
+      "id": "tamper_invalidation_and_multi_tenant",
+      "description": "Validates cryptographic HMAC-SHA256 signature invalidation upon story narrative edits, and enforces cross-tenant isolation between ws-alpha and ws-beta",
+      "workspace_alpha": "ws-alpha",
+      "workspace_beta": "ws-beta",
+      "story_alpha_id": "story-redis-cascade-01",
+      "original_approval_token_prefix": "story_hmac_",
+      "edited_narrative_hook": "Edited hook without re-approval: A minor Redis blip occurred.",
+      "expected_post_edit_status": "draft",
+      "expected_post_edit_token": ""
+    }
+  ]
+}

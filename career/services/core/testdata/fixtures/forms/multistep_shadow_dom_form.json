@@ -1,0 +1,87 @@
+{
+  "wizard_id": "wiz_linkedin_easy_apply_multistep",
+  "title": "Senior Distributed Systems Engineer - Multi-Step Easy Apply",
+  "provider": "linkedin_easy_apply",
+  "total_steps": 3,
+  "steps": [
+    {
+      "step_index": 1,
+      "step_name": "Contact Information",
+      "is_shadow_dom": false,
+      "fields": [
+        {
+          "field_id": "step1_name",
+          "label": "Full Legal Name",
+          "type": "text",
+          "required": true,
+          "category": "contact",
+          "target_sub_key": "name"
+        },
+        {
+          "field_id": "step1_email",
+          "label": "Email Address",
+          "type": "text",
+          "required": true,
+          "category": "contact",
+          "target_sub_key": "email"
+        },
+        {
+          "field_id": "step1_phone",
+          "label": "Mobile Phone",
+          "type": "text",
+          "required": true,
+          "category": "contact",
+          "target_sub_key": "phone"
+        }
+      ]
+    },
+    {
+      "step_index": 2,
+      "step_name": "Work Authorization & Experience",
+      "is_shadow_dom": true,
+      "shadow_root_selector": "#interop-outlet",
+      "fields": [
+        {
+          "field_id": "step2_work_auth",
+          "label": "Are you legally authorized to work in this country?",
+          "type": "radio",
+          "options": ["Yes", "No"],
+          "required": true,
+          "category": "work_authorization",
+          "is_sensitive": true
+        },
+        {
+          "field_id": "step2_sponsorship",
+          "label": "Will you now or in the future require visa sponsorship?",
+          "type": "radio",
+          "options": ["Yes", "No"],
+          "required": true,
+          "category": "sponsorship",
+          "is_sensitive": true
+        },
+        {
+          "field_id": "step2_go_years",
+          "label": "How many years of work experience do you have with Go?",
+          "type": "number",
+          "required": true,
+          "category": "experience",
+          "target_sub_key": "go"
+        }
+      ]
+    },
+    {
+      "step_index": 3,
+      "step_name": "Review & Submit",
+      "is_shadow_dom": false,
+      "fields": [
+        {
+          "field_id": "step3_confirm_terms",
+          "label": "I confirm that all provided career details are accurate and factually verified.",
+          "type": "checkbox",
+          "required": true,
+          "category": "custom"
+        }
+      ]
+    }
+  ]
+}

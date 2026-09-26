@@ -1,0 +1,98 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "engineering_launch_advocacy_campaign",
+      "description": "Approved product launch advocacy campaign with brand governance, prohibited keywords, and 3 distinct persona copy variants",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "campaign": {
+        "campaign_id": "camp-adv-01",
+        "title": "Platform 2.0 Real-Time Event Architecture Launch",
+        "description": "Celebrating the rollout of our new distributed event streaming core built with Go and Kafka",
+        "governance": {
+          "guidelines": "Highlight team collaboration, technical robustness, and latency reduction without confidential client disclosures.",
+          "allowed_hashtags": ["#SoftwareEngineering", "#DistributedSystems", "#GoLang", "#TechMilestone"],
+          "forbidden_keywords": [
+            "guaranteed 100% returns",
+            "foolproof",
+            "competitor x sucks",
+            "secret insider trick",
+            "miracle solution"
+          ]
+        },
+        "variants": [
+          {
+            "variant_id": "var-eng-01",
+            "persona": "engineering",
+            "headline": "Engineering Deep-Dive: How we scaled to 50k events/sec",
+            "suggested_text": "Shipping Platform 2.0 today! We migrated our core event pipeline to Go, reducing P99 latency by 64% while maintaining strict data consistency.\n\nProud of our engineering team for pulling this off without downtime.\n\n#SoftwareEngineering #GoLang #DistributedSystems",
+            "target_tags": ["engineering", "backend", "systems"]
+          },
+          {
+            "variant_id": "var-prod-02",
+            "persona": "product",
+            "headline": "Product Impact: Real-time insights for our customers",
+            "suggested_text": "Big milestone today with the launch of Platform 2.0! Our customers can now monitor workflow analytics in sub-second real-time instead of waiting for daily batch syncs.\n\nExcited to see the immediate productivity impact.\n\n#TechMilestone #ProductUpdate",
+            "target_tags": ["product", "analytics", "customers"]
+          },
+          {
+            "variant_id": "var-tal-03",
+            "persona": "talent_culture",
+            "headline": "Team & Culture: Building big things together",
+            "suggested_text": "Celebrating the launch of Platform 2.0! Massive congratulations to our cross-functional teams across engineering, design, and ops for delivering exceptional work.\n\nWe're continuing to grow our team—check out our open roles!\n\n#TechMilestone #LifeAtWork #EngineeringHiring",
+            "target_tags": ["culture", "team", "hiring"]
+          }
+        ],
+        "status": "approved",
+        "approved_by": "lead-vp-eng",
+        "approved_at": "2026-09-20T10:00:00Z"
+      },
+      "expected_approval_valid": true,
+      "expected_forbidden_word_detected": false
+    },
+    {
+      "scenario_id": "coordinated_fake_engagement_rejection",
+      "description": "Strict rejection of mutual auto-like engagement pods and synthetic comment syndication",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "pod_request": {
+        "campaign_id": "camp-adv-01",
+        "target_post_urn": "urn:li:share:987654321",
+        "action": "auto_like_all_employees",
+        "participating_employee_ids": ["emp-101", "emp-102", "emp-103", "emp-104"],
+        "synthetic_comments": [
+          "Great achievement team!",
+          "Proud to work here!",
+          "Incredible platform!"
+        ]
+      },
+      "expected_error": "coordinated_engagement_prohibited",
+      "expected_message": "Coordinated engagement pods and automated reciprocal likes are strictly prohibited by platform integrity policies"
+    },
+    {
+      "scenario_id": "tamper_invalidation_post_approval_at007",
+      "description": "Modifying campaign copy or brand governance after cryptographic approval immediately revokes approval token and resets status to draft",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "original_campaign_id": "camp-adv-01",
+      "tampered_modification": {
+        "variant_id": "var-eng-01",
+        "modified_text": "Shipping Platform 2.0 today with a secret insider trick and guaranteed 100% returns over competitor systems!"
+      },
+      "expected_forbidden_keywords": [
+        "guaranteed 100% returns",
+        "secret insider trick"
+      ],
+      "expected_status_after_tamper": "draft",
+      "expected_approval_token_cleared": true
+    },
+    {
+      "scenario_id": "multi_tenant_workspace_isolation_at011",
+      "description": "Cross-workspace attempt by ws-beta to access, inspect, or share from ws-alpha campaign is blocked",
+      "primary_workspace": "ws-alpha",
+      "intruder_workspace": "ws-beta",
+      "campaign_id": "camp-adv-01",
+      "expected_access_denied": true
+    }
+  ]
+}

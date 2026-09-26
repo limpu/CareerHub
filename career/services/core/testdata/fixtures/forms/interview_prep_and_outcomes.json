@@ -1,0 +1,127 @@
+{
+  "version": "1.0.0",
+  "domain": "interview_prep_and_outcomes",
+  "invariant_guarantees": {
+    "CAR-23": "Truth-in-advertising: No invented interview signals or simulated recruiter interactions without authentic receipts",
+    "AT-003": "Zero hallucination: Candidate talking points derived strictly from confirmed profile facts; missing skills marked as prep gaps"
+  },
+  "scenarios": [
+    {
+      "scenario_id": "full_interview_prep_and_brief",
+      "description": "Standard company brief synthesis, STAR behavioral guidance, and technical questions grounded in verified candidate facts",
+      "company_input": {
+        "company_name": "Acme Cloud Infrastructure Inc.",
+        "domain": "acmecloud.example.com",
+        "industry": "Cloud Computing / Distributed Systems",
+        "known_size": "250-500 employees",
+        "known_tech_stack": ["Go", "PostgreSQL", "Kafka", "Docker", "Kubernetes", "AWS"],
+        "mission": "Empowering microservices with high-performance distributed storage.",
+        "unverified_fields": ["Glassdoor Interview Difficulty Estimate", "Annual Revenue Estimate"]
+      },
+      "job_target": {
+        "job_id": "job-acme-sr-backend-001",
+        "title": "Senior Distributed Systems Engineer",
+        "department": "Platform Core",
+        "required_skills": ["Go", "Distributed Systems", "Kafka", "PostgreSQL", "Concurreny Primitives"]
+      },
+      "candidate_profile": {
+        "candidate_id": "cand-9988",
+        "confirmed_skills": ["Go", "PostgreSQL", "Kafka", "Docker", "Redis", "Distributed Systems"],
+        "confirmed_experiences": [
+          {
+            "company": "FastFintech Corp",
+            "role": "Staff Backend Engineer",
+            "duration": "2021 - 2025",
+            "bullet_points": [
+              "Architected event-driven microservices with Go and Kafka handling 45,000 QPS with p99 latency < 12ms",
+              "Implemented partitioned PostgreSQL sharding reducing read contention by 65%"
+            ]
+          }
+        ]
+      },
+      "expected_company_brief": {
+        "company_name": "Acme Cloud Infrastructure Inc.",
+        "verified_fields_count": 5,
+        "unverified_fields_count": 2
+      },
+      "expected_questions_count": 4
+    },
+    {
+      "scenario_id": "grounded_questions_with_unmatched_gaps",
+      "description": "Candidate facing role with required skills (Rust, eBPF) absent from verified profile; system highlights prep gaps rather than inventing background",
+      "company_input": {
+        "company_name": "KernelEdge Security",
+        "domain": "kerneledge.example.com",
+        "industry": "Cybersecurity & Kernel Systems",
+        "known_size": "50-100 employees",
+        "known_tech_stack": ["Rust", "eBPF", "Linux Kernel", "C++"],
+        "mission": "Real-time kernel telemetry and threat containment.",
+        "unverified_fields": ["Series B Valuation"]
+      },
+      "job_target": {
+        "job_id": "job-kernel-edge-002",
+        "title": "Low-Latency Kernel Systems Engineer",
+        "department": "Network Engine",
+        "required_skills": ["Rust", "eBPF", "Linux Kernel", "Go"]
+      },
+      "candidate_profile": {
+        "candidate_id": "cand-9988",
+        "confirmed_skills": ["Go", "PostgreSQL", "Kafka", "Linux"],
+        "confirmed_experiences": [
+          {
+            "company": "FastFintech Corp",
+            "role": "Staff Backend Engineer",
+            "duration": "2021 - 2025",
+            "bullet_points": [
+              "Optimized Linux network socket buffers on high-throughput Go ingestion gateways"
+            ]
+          }
+        ]
+      },
+      "expected_skill_gaps": ["Rust", "eBPF", "Linux Kernel"],
+      "expected_gap_handling": "needs_preparation"
+    },
+    {
+      "scenario_id": "interview_round_transition_and_notes",
+      "description": "Scheduling an interview round, recording pre-interview questions, and logging post-interview debrief notes and reflections",
+      "application_record_id": "app-rec-9871",
+      "round_schedule": {
+        "round_id": "round-tech-01",
+        "stage_name": "Technical Assessment & Architecture",
+        "scheduled_at": "2026-10-05T14:00:00Z",
+        "timezone": "UTC",
+        "format": "video",
+        "meeting_link": "https://meet.example.com/acme-tech-01",
+        "interviewer_name": "Sarah Jenkins (Principal Architect)"
+      },
+      "candidate_notes": {
+        "pre_interview_notes": "Emphasize Kafka partition rebalancing and consensus protocols. Ask about multi-region failover strategy.",
+        "questions_asked_by_candidate": [
+          "How does the team handle schema migrations across distributed Kafka streams?",
+          "What is the average on-call rotation cadence for the platform core team?"
+        ],
+        "post_interview_reflections": "Very positive discussion on Go channels and GC tuning. System design portion went well; interviewer seemed satisfied with write-ahead log explanation.",
+        "self_rating": 4,
+        "follow_up_actions": "Send thank-you email highlighting discussion on raft consensus."
+      },
+      "expected_outcome": "passed"
+    },
+    {
+      "scenario_id": "outcome_funnel_and_conversion_rates",
+      "description": "Funnel analytics aggregating stage transitions and computing real conversion rates across active pipeline",
+      "sample_applications": [
+        {"app_id": "app-01", "stage": "applied", "outcome": "pending", "days_in_stage": 4},
+        {"app_id": "app-02", "stage": "screen", "outcome": "passed", "days_in_stage": 7},
+        {"app_id": "app-03", "stage": "technical", "outcome": "passed", "days_in_stage": 12},
+        {"app_id": "app-04", "stage": "system_design", "outcome": "passed", "days_in_stage": 15},
+        {"app_id": "app-05", "stage": "onsite", "outcome": "passed", "days_in_stage": 21},
+        {"app_id": "app-06", "stage": "offered", "outcome": "offered", "days_in_stage": 26},
+        {"app_id": "app-07", "stage": "rejected", "outcome": "rejected", "days_in_stage": 8},
+        {"app_id": "app-08", "stage": "withdrawn", "outcome": "withdrawn", "days_in_stage": 5}
+      ],
+      "expected_total_applications": 8,
+      "expected_offered_count": 1,
+      "expected_rejected_count": 1
+    }
+  ]
+}

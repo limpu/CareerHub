@@ -1,0 +1,25 @@
+{
+  "id": "cand_002_missing_sensitive",
+  "name": "Alex Smith",
+  "email": "alex.smith@example.com",
+  "title": "Full Stack Developer",
+  "location": "Remote",
+  "confirmed_facts": [
+    {
+      "id": "fact_01",
+      "category": "experience",
+      "text": "3 years of experience in TypeScript, React, and Node.js",
+      "confidence": 0.9,
+      "is_verified": true,
+      "privacy_tier": "public"
+    },
+    {
+      "id": "fact_02",
+      "category": "skills",
+      "text": "TypeScript, React, Next.js, Node.js, Tailwind CSS",
+      "confidence": 0.9,
+      "is_verified": true,
+      "privacy_tier": "public"
+    }
+  ]
+}

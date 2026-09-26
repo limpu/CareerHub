@@ -1,0 +1,170 @@
+{
+  "version": "1.0.0",
+  "task": "IMP-LI-15",
+  "description": "Groundtruth fixture scenarios for LinkedIn engagement monitoring, ICP engager segmentation, and AT-028/AT-010 metric honesty verification.",
+  "scenarios": [
+    {
+      "id": "verified_post_metrics_with_icp_segmentation",
+      "name": "Verified Post Metrics with ICP Engager Segmentation (AT-028, SRC-L2)",
+      "workspace_id": "ws-career-prod",
+      "tenant_id": "ws-career-prod",
+      "post_urn": "urn:li:activity:7240102938491029384",
+      "post_title": "Why Distributed Consensus Fails in Real World Networks",
+      "published_at": "2026-09-15T14:30:00Z",
+      "metrics": {
+        "reactions": { "value": 142, "status": "available", "is_modeled": false },
+        "comments": { "value": 38, "status": "available", "is_modeled": false },
+        "reposts": { "value": 19, "status": "available", "is_modeled": false },
+        "impressions": { "value": 14500, "status": "available", "is_modeled": false },
+        "unique_members_reached": { "value": 9800, "status": "available", "is_modeled": false },
+        "clicks": { "value": 412, "status": "available", "is_modeled": false },
+        "engagement_rate": { "value": 1.37, "status": "available", "is_modeled": false }
+      },
+      "engagers": [
+        {
+          "author_urn": "urn:li:person:alex_chen_vp",
+          "name": "Alex Chen",
+          "headline": "VP of Infrastructure Engineering at CloudScale",
+          "company": "CloudScale",
+          "interaction_type": "comment",
+          "comment_text": "Single-flight mutex coalescing saved us during the Q4 spike. Great breakdown on TTL jitter.",
+          "expected_segment": "decision_maker"
+        },
+        {
+          "author_urn": "urn:li:person:elena_rostova_arch",
+          "name": "Elena Rostova",
+          "headline": "Principal Systems Architect @ FinTech Systems",
+          "company": "FinTech Systems",
+          "interaction_type": "comment",
+          "comment_text": "Consistent hashing rings without virtual nodes always cause 3x hot-spots under zipf distribution.",
+          "expected_segment": "peer_practitioner"
+        },
+        {
+          "author_urn": "urn:li:person:marcus_vance_recruiter",
+          "name": "Marcus Vance",
+          "headline": "Technical Talent Partner | Staff & Principal Infrastructure Hiring",
+          "company": "Apex Search Partners",
+          "interaction_type": "reaction",
+          "comment_text": "",
+          "expected_segment": "talent_partner"
+        },
+        {
+          "author_urn": "urn:li:person:sarah_dev_junior",
+          "name": "Sarah Miller",
+          "headline": "Full-Stack Developer learning Go",
+          "company": "Tech Academy",
+          "interaction_type": "reaction",
+          "comment_text": "",
+          "expected_segment": "other_network"
+        }
+      ],
+      "expected_icp_breakdown": {
+        "decision_makers": 1,
+        "peer_practitioners": 1,
+        "talent_partners": 1,
+        "other_network": 1,
+        "high_value_engagers_count": 3
+      }
+    },
+    {
+      "id": "unavailable_metrics_scope_boundary_at010",
+      "name": "Honest Metric Display for Consumer Account Missing Partner Scopes (AT-010, AT-028)",
+      "workspace_id": "ws-career-prod",
+      "tenant_id": "ws-career-prod",
+      "post_urn": "urn:li:activity:7240209384029384756",
+      "post_title": "3 Lessons from Migrating Legacy Monoliths to Event Streams",
+      "published_at": "2026-09-18T10:00:00Z",
+      "metrics": {
+        "reactions": { "value": 45, "status": "available", "is_modeled": false },
+        "comments": { "value": 12, "status": "available", "is_modeled": false },
+        "reposts": { "value": 3, "status": "available", "is_modeled": false },
+        "impressions": {
+          "value": 0,
+          "status": "unavailable",
+          "unavailable_reason": "requires_marketing_developer_platform_partner_scope",
+          "is_modeled": false
+        },
+        "unique_members_reached": {
+          "value": 0,
+          "status": "unavailable",
+          "unavailable_reason": "requires_marketing_developer_platform_partner_scope",
+          "is_modeled": false
+        },
+        "clicks": {
+          "value": 0,
+          "status": "unavailable",
+          "unavailable_reason": "link_tracking_not_enabled",
+          "is_modeled": false
+        },
+        "engagement_rate": {
+          "value": 0,
+          "status": "unavailable",
+          "unavailable_reason": "impressions_unavailable_cannot_compute_rate",
+          "is_modeled": false
+        }
+      },
+      "expected_behavior": {
+        "zero_vs_unavailable_distinction": true,
+        "no_fake_random_simulation": true,
+        "disclosure_message": "Impression and view analytics require official LinkedIn Marketing Developer Partner permissions. In accordance with AT-028 & AT-010, missing platform data is marked unavailable rather than simulated."
+      }
+    },
+    {
+      "id": "modeled_estimate_vs_actual_causal_at028",
+      "name": "Modeled Suggestion vs Proven Causal Impact Distinction (AT-028)",
+      "workspace_id": "ws-career-prod",
+      "tenant_id": "ws-career-prod",
+      "post_urn": "urn:li:activity:7240394857291029384",
+      "post_title": "Database Sharding: When to Stop and When to Scale",
+      "published_at": "2026-09-19T08:00:00Z",
+      "metrics": {
+        "reactions": { "value": 88, "status": "available", "is_modeled": false },
+        "comments": { "value": 24, "status": "available", "is_modeled": false },
+        "modeled_reach_estimate": {
+          "value": 6200,
+          "status": "modeled_estimate",
+          "is_modeled": true,
+          "model_basis": "Heuristic estimate based on reaction velocity (88 reactions * 70x creator average reach factor). Not an audited platform metric."
+        },
+        "suggested_next_topic": {
+          "topic": "Zero-Downtime Data Migration Recipes",
+          "is_modeled": true,
+          "recommendation_reason": "Modeled based on high comment keyword density in database sharding discussion."
+        }
+      },
+      "expected_behavior": {
+        "clearly_tagged_as_modeled": true,
+        "no_causal_claim": true
+      }
+    },
+    {
+      "id": "multi_tenant_isolation_boundary_at012",
+      "name": "Cross-Tenant Analytics Isolation Boundary (AT-011, AT-012)",
+      "workspace_id": "ws-tenant-alpha",
+      "tenant_id": "ws-tenant-alpha",
+      "post_urn": "urn:li:activity:7240495867392019283",
+      "forbidden_access_tenant": "ws-tenant-beta",
+      "expected_rejection": "records: cross-tenant access strictly denied (AT-012)"
+    }
+  ],
+  "creator_benchmarks": [
+    {
+      "category": "engineering_leadership",
+      "sample_size": 25,
+      "avg_reactions": 85.4,
+      "avg_comments": 22.1,
+      "avg_reposts": 8.6,
+      "avg_engagement_rate": 1.45,
+      "benchmark_source": "Verified historical user post archive"
+    },
+    {
+      "category": "technical_practitioner",
+      "sample_size": 40,
+      "avg_reactions": 54.2,
+      "avg_comments": 14.8,
+      "avg_reposts": 4.1,
+      "avg_engagement_rate": 1.12,
+      "benchmark_source": "Verified historical user post archive"
+    }
+  ]
+}

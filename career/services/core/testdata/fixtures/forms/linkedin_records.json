@@ -1,0 +1,178 @@
+{
+  "description": "Fixtures for LinkedIn Records Engine (Person, Company, Job, Post) covering AT-011 and AT-012 tenant isolation.",
+  "workspaces": {
+    "ws-alpha": {
+      "persons": [
+        {
+          "record_id": "rec-p-01",
+          "workspace_id": "ws-alpha",
+          "tenant_id": "tenant-alpha",
+          "entity_type": "person",
+          "vanity_slug": "sarah-chen-arch",
+          "full_name": "Sarah Chen",
+          "headline": "Lead Systems Architect @ CloudScale",
+          "current_company": "CloudScale Systems",
+          "current_role": "Lead Systems Architect",
+          "location": "San Francisco Bay Area",
+          "connection_tier": "1st",
+          "public_profile_url": "https://linkedin.com/in/sarah-chen-arch",
+          "skills": ["Go", "Distributed Systems", "Kubernetes", "gRPC"],
+          "version": 1,
+          "observed_at": "2026-03-20T10:00:00Z"
+        },
+        {
+          "record_id": "rec-p-02",
+          "workspace_id": "ws-alpha",
+          "tenant_id": "tenant-alpha",
+          "entity_type": "person",
+          "vanity_slug": "marcus-brooks-data",
+          "full_name": "Marcus Brooks",
+          "headline": "Staff Data Engineer & AI Researcher",
+          "current_company": "Apex Dynamics",
+          "current_role": "Staff Data Engineer",
+          "location": "New York, NY",
+          "connection_tier": "2nd",
+          "public_profile_url": "https://linkedin.com/in/marcus-brooks-data",
+          "skills": ["Python", "Spark", "Kafka", "Data Engineering"],
+          "version": 1,
+          "observed_at": "2026-03-20T10:15:00Z"
+        }
+      ],
+      "companies": [
+        {
+          "record_id": "rec-c-01",
+          "workspace_id": "ws-alpha",
+          "tenant_id": "tenant-alpha",
+          "entity_type": "company",
+          "universal_name": "cloudscale-systems",
+          "company_name": "CloudScale Systems",
+          "domain": "cloudscale.tech",
+          "industry": "Software Development",
+          "size_tier": "201-500 employees",
+          "headquarters": "San Francisco, CA",
+          "specialties": ["Distributed Infrastructure", "Cloud Native", "Observability"],
+          "follower_count": 48200,
+          "verified": true,
+          "version": 1,
+          "observed_at": "2026-03-20T10:30:00Z"
+        }
+      ],
+      "jobs": [
+        {
+          "record_id": "rec-j-01",
+          "workspace_id": "ws-alpha",
+          "tenant_id": "tenant-alpha",
+          "entity_type": "job",
+          "job_id": "job-10101",
+          "title": "Principal Systems Engineer",
+          "company_name": "CloudScale Systems",
+          "workplace_type": "Remote",
+          "location": "United States",
+          "employment_type": "Full-time",
+          "description_snippet": "We are seeking a Principal Systems Engineer to scale our core event platform to millions of TPS.",
+          "applicant_count": 34,
+          "posted_at": "2026-03-18T08:00:00Z",
+          "version": 1,
+          "observed_at": "2026-03-20T11:00:00Z"
+        }
+      ],
+      "posts": [
+        {
+          "record_id": "rec-post-01",
+          "workspace_id": "ws-alpha",
+          "tenant_id": "tenant-alpha",
+          "entity_type": "post",
+          "urn": "urn:li:activity:7283940182",
+          "author_name": "Sarah Chen",
+          "author_vanity": "sarah-chen-arch",
+          "commentary": "Thrilled to share that our team just achieved sub-millisecond p99 latency on our distributed sync engine!",
+          "media_type": "article",
+          "reactions_count": 340,
+          "comments_count": 42,
+          "shares_count": 18,
+          "published_at": "2026-03-19T14:20:00Z",
+          "version": 1,
+          "observed_at": "2026-03-20T11:30:00Z"
+        }
+      ]
+    },
+    "ws-beta": {
+      "persons": [
+        {
+          "record_id": "rec-p-99",
+          "workspace_id": "ws-beta",
+          "tenant_id": "tenant-beta",
+          "entity_type": "person",
+          "vanity_slug": "elena-rostova-sec",
+          "full_name": "Elena Rostova",
+          "headline": "Lead Security Researcher @ SecureMesh",
+          "current_company": "SecureMesh",
+          "current_role": "Lead Security Researcher",
+          "location": "Austin, TX",
+          "connection_tier": "1st",
+          "public_profile_url": "https://linkedin.com/in/elena-rostova-sec",
+          "skills": ["AppSec", "Cryptography", "Threat Modeling"],
+          "version": 1,
+          "observed_at": "2026-03-20T12:00:00Z"
+        }
+      ],
+      "companies": [
+        {
+          "record_id": "rec-c-99",
+          "workspace_id": "ws-beta",
+          "tenant_id": "tenant-beta",
+          "entity_type": "company",
+          "universal_name": "securemesh-cyber",
+          "company_name": "SecureMesh",
+          "domain": "securemesh.io",
+          "industry": "Computer & Network Security",
+          "size_tier": "51-200 employees",
+          "headquarters": "Austin, TX",
+          "specialties": ["Zero Trust", "Cloud Security", "Identity Governance"],
+          "follower_count": 12500,
+          "verified": true,
+          "version": 1,
+          "observed_at": "2026-03-20T12:15:00Z"
+        }
+      ],
+      "jobs": [
+        {
+          "record_id": "rec-j-99",
+          "workspace_id": "ws-beta",
+          "tenant_id": "tenant-beta",
+          "entity_type": "job",
+          "job_id": "job-20202",
+          "title": "Senior Cryptography Engineer",
+          "company_name": "SecureMesh",
+          "workplace_type": "Hybrid",
+          "location": "Austin, TX",
+          "employment_type": "Full-time",
+          "description_snippet": "Looking for cryptographic engineers experienced in post-quantum key exchange algorithms.",
+          "applicant_count": 12,
+          "posted_at": "2026-03-19T09:00:00Z",
+          "version": 1,
+          "observed_at": "2026-03-20T12:30:00Z"
+        }
+      ],
+      "posts": [
+        {
+          "record_id": "rec-post-99",
+          "workspace_id": "ws-beta",
+          "tenant_id": "tenant-beta",
+          "entity_type": "post",
+          "urn": "urn:li:activity:8392019283",
+          "author_name": "Elena Rostova",
+          "author_vanity": "elena-rostova-sec",
+          "commentary": "Announcing our open source auditing framework for zero-knowledge proofs.",
+          "media_type": "none",
+          "reactions_count": 512,
+          "comments_count": 68,
+          "shares_count": 45,
+          "published_at": "2026-03-20T08:00:00Z",
+          "version": 1,
+          "observed_at": "2026-03-20T13:00:00Z"
+        }
+      ]
+    }
+  }
+}

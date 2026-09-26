@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "id": "standard_daily_digest_scenario",
+      "description": "Standard daily digest with active applications, 1 upcoming interview, 2 follow-ups due, and high health score",
+      "user_id": "usr_standard_01",
+      "workspace_id": "ws_standard_01",
+      "timezone": "America/New_York",
+      "report_date": "2026-09-20",
+      "activity": {
+        "applied_today": 2,
+        "interviews_scheduled": 1,
+        "follow_ups_due": 2,
+        "active_applications_total": 8,
+        "momentum_score": 88
+      },
+      "interviews": [
+        {
+          "id": "int_001",
+          "company": "Stripe",
+          "role": "Senior Distributed Systems Engineer",
+          "round": "System Design Round",
+          "scheduled_at": "2026-09-21T14:00:00-04:00",
+          "meeting_link": "https://meet.google.com/xyz-test"
+        }
+      ],
+      "follow_ups": [
+        {
+          "application_id": "app_github_01",
+          "company": "GitHub",
+          "role": "Staff Backend Engineer",
+          "applied_at": "2026-09-12T10:00:00Z",
+          "days_since_applied": 8,
+          "suggested_action": "Send polite check-in email to hiring recruiter"
+        },
+        {
+          "application_id": "app_cloudflare_02",
+          "company": "Cloudflare",
+          "role": "Systems Engineer - Edge",
+          "applied_at": "2026-09-11T16:00:00Z",
+          "days_since_applied": 9,
+          "suggested_action": "Follow up on status via recruiter LinkedIn message"
+        }
+      ],
+      "incomplete_profile_items": [
+        {
+          "section": "experience",
+          "issue": "Missing quantified metrics in latest Senior Engineer role",
+          "impact": "Reduces ATS score by ~12 points",
+          "recommended_action": "Add numerical metrics (e.g. latency reduction %, scale RPS)"
+        }
+      ]
+    },
+    {
+      "id": "dst_timezone_transition_scenario",
+      "description": "Verification of AT-018: Next delivery calculation across DST shift (America/New_York spring forward)",
+      "timezone": "America/New_York",
+      "scheduled_hour": 9,
+      "scheduled_minute": 0,
+      "reference_dates": [
+        {
+          "current_time_utc": "2026-03-07T12:00:00Z",
+          "expected_next_utc": "2026-03-08T14:00:00Z",
+          "note": "Standard Time (UTC-5) -> Delivery at 09:00 EST is 14:00 UTC"
+        },
+        {
+          "current_time_utc": "2026-03-08T15:00:00Z",
+          "expected_next_utc": "2026-03-09T13:00:00Z",
+          "note": "Daylight Saving Time begins (UTC-4) -> Delivery at 09:00 EDT is 13:00 UTC"
+        }
+      ]
+    },
+    {
+      "id": "incomplete_profile_alerts_scenario",
+      "description": "Detection of multiple actionable profile gaps to improve candidate ATS readiness",
+      "profile_items": [
+        {
+          "section": "summary",
+          "issue": "Master summary missing core technical keywords",
+          "severity": "medium",
+          "ats_impact": -8
+        },
+        {
+          "section": "skills",
+          "issue": "Uncategorized skills found (Go, Redis listed without category)",
+          "severity": "low",
+          "ats_impact": -4
+        },
+        {
+          "section": "contact",
+          "issue": "Missing GitHub or portfolio URL",
+          "severity": "high",
+          "ats_impact": -15
+        }
+      ]
+    },
+    {
+      "id": "reminder_lifecycle_scenario",
+      "description": "Reminder state transitions: Pending -> Snoozed -> Completed with tamper-evident tracking",
+      "reminder_id": "rem_test_001",
+      "initial_status": "pending",
+      "snooze_hours": 24,
+      "expected_snooze_status": "snoozed",
+      "final_status": "completed"
+    }
+  ]
+}

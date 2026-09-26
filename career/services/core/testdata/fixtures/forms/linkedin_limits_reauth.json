@@ -1,0 +1,96 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "weekly_invitation_limit_detection",
+      "description": "Upstream weekly invitation limit error triggers fail-closed circuit-breaker and cooling-off pause (REQ-009, REQ-010, AT-008)",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "account_id": "li:member_alex_101",
+      "incoming_status_code": 429,
+      "incoming_error_body": "HTTP 429: You've reached the weekly invitation limit. Invitations will be refreshed next week. (upstream restriction code: INVITATION_LIMIT_EXCEEDED)",
+      "expected_limit_type": "weekly_invitations",
+      "expected_account_status": "rate_limited",
+      "expected_cooldown_hours": 72,
+      "expected_fail_closed": true,
+      "expected_action_blocked": "connection_request"
+    },
+    {
+      "scenario_id": "captcha_checkpoint_fail_closed",
+      "description": "Upstream security checkpoint and CAPTCHA challenge halts account execution with zero stealth bypass (AT-010, SRC-S3)",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "account_id": "li:member_sarah_202",
+      "incoming_status_code": 403,
+      "incoming_error_body": "HTTP 403: Security checkpoint encountered at /checkpoint/challenge/captcha. User interaction required. Automated access prohibited.",
+      "expected_limit_type": "security_checkpoint",
+      "expected_challenge_type": "captcha",
+      "expected_account_status": "challenge_required",
+      "expected_stealth_bypass_allowed": false,
+      "expected_action_blocked": "any_automated_action"
+    },
+    {
+      "scenario_id": "cross_workspace_account_budget_sharing_at009",
+      "description": "Provider account shared across workspaces ws-alpha and ws-beta pools combined budget consumption without history reset (AT-008, AT-009, REQ-010)",
+      "tenant_id": "tenant-corp-01",
+      "account_id": "li:member_elena_303",
+      "workspace_a": "ws-alpha",
+      "workspace_b": "ws-beta",
+      "account_limits": {
+        "daily_invitations": 20,
+        "weekly_invitations": 80,
+        "daily_inmail_messages": 15,
+        "daily_recruiter_dm": 5,
+        "daily_company_follows": 15
+      },
+      "activity_events": [
+        {
+          "workspace_id": "ws-alpha",
+          "module": "linkedin",
+          "action": "connection_request",
+          "amount": 12,
+          "timestamp": "2026-09-20T09:00:00Z"
+        },
+        {
+          "workspace_id": "ws-beta",
+          "module": "career",
+          "action": "connection_request",
+          "amount": 6,
+          "timestamp": "2026-09-20T10:15:00Z"
+        },
+        {
+          "workspace_id": "ws-alpha",
+          "module": "career",
+          "action": "recruiter_dm",
+          "amount": 3,
+          "timestamp": "2026-09-20T11:30:00Z"
+        }
+      ],
+      "expected_combined_used_invitations": 18,
+      "expected_remaining_daily_invitations": 2,
+      "expected_combined_used_recruiter_dm": 3,
+      "expected_remaining_recruiter_dm": 2,
+      "expected_next_invite_allowed_in_workspace_b": true,
+      "expected_excessive_invite_blocked": true
+    },
+    {
+      "scenario_id": "legitimate_reauth_resolution",
+      "description": "Legitimate user-facing re-authentication clears challenge and restores active account status without secret leakage (AT-010, AT-016)",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "account_id": "li:member_marcus_404",
+      "initial_state": {
+        "status": "challenge_required",
+        "active_challenge": "captcha",
+        "challenge_reason": "Automated session halted by LinkedIn security checkpoint"
+      },
+      "resolution_request": {
+        "resolution_method": "official_oauth_reauth",
+        "verified_by_user": true,
+        "notes": "User completed OAuth web flow on official LinkedIn authorization endpoint with Bearer tok_*** redacted"
+      },
+      "expected_resulting_status": "active",
+      "expected_challenge_cleared": true,
+      "expected_audit_logged": true
+    }
+  ]
+}

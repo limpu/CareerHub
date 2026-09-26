@@ -1,0 +1,81 @@
+{
+  "description": "Groundtruth fixture suite for IMP-CAR-21: Run controls, safe vs uncertain stages, fencing tokens (AT-021), zero-duplicate crash recovery (AT-006), and rolling hourly rate limiter (FND-011)",
+  "scenarios": [
+    {
+      "id": "standard_discovery_run_lifecycle",
+      "name": "Standard Job Discovery Batch Run with Checkpoints",
+      "run_type": "discovery_run",
+      "total_items": 25,
+      "hourly_limit": 50,
+      "stages": [
+        {
+          "stage_name": "fetch_job_listings",
+          "safety": "safe_to_retry",
+          "duration_ms": 450,
+          "outcome": "success"
+        },
+        {
+          "stage_name": "evaluate_and_score_matches",
+          "safety": "safe_to_retry",
+          "duration_ms": 620,
+          "outcome": "success"
+        },
+        {
+          "stage_name": "persist_saved_jobs",
+          "safety": "safe_to_retry",
+          "duration_ms": 280,
+          "outcome": "success"
+        }
+      ],
+      "expected_final_status": "completed",
+      "requires_reconciliation": false
+    },
+    {
+      "id": "crash_during_uncertain_submit_scenario",
+      "name": "Simulated Worker Crash During Final Portal Submission (AT-006)",
+      "run_type": "application_session",
+      "total_items": 1,
+      "hourly_limit": 15,
+      "stages": [
+        {
+          "stage_name": "prepare_materials",
+          "safety": "safe_to_retry",
+          "duration_ms": 300,
+          "outcome": "success"
+        },
+        {
+          "stage_name": "submit_application_to_ats",
+          "safety": "uncertain_write_requires_reconciliation",
+          "duration_ms": 1200,
+          "outcome": "crashed_unexpected_eof"
+        }
+      ],
+      "expected_final_status": "needs_reconciliation",
+      "requires_reconciliation": true,
+      "auto_retry_allowed": false,
+      "reconciliation_rule": "Uncertain writes must never blindly retry to prevent duplicate application submissions (AT-006)"
+    },
+    {
+      "id": "fencing_token_stale_worker_scenario",
+      "name": "Stale Attempt Fencing After Pause/Cancel Control Action (AT-021)",
+      "run_type": "tailoring_batch",
+      "total_items": 10,
+      "initial_fencing_token": 1,
+      "control_action": "pause",
+      "expected_new_fencing_token": 2,
+      "simulated_stale_attempt_token": 1,
+      "expected_rejection_error": "stale attempt fenced: worker token 1 is less than current run fencing token 2"
+    },
+    {
+      "id": "rolling_hourly_rate_limit_scenario",
+      "name": "Sliding Window Hourly Rate Limiter Throttling (FND-011)",
+      "run_type": "application_session",
+      "hourly_limit": 5,
+      "recent_submission_offsets_minutes": [55, 42, 30, 18, 5],
+      "attempt_at_minute": 0,
+      "expected_allowed": false,
+      "expected_current_window_count": 5,
+      "expected_backoff_seconds": 300
+    }
+  ]
+}

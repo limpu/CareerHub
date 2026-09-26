@@ -1,0 +1,83 @@
+{
+  "fixtures": [
+    {
+      "fixture_id": "indeed_easy_apply_native",
+      "name": "Indeed Native Easy Apply Job Posting",
+      "url": "https://www.indeed.com/viewjob?jk=9876543210abcdef&tk=1h2j3k4l5m",
+      "provider": "indeed",
+      "portal_type": "indeed_easy_apply",
+      "support_level": "native_easy_apply",
+      "is_easy_apply": true,
+      "apply_button_selector": "button.ia-IndeedApplyButton",
+      "modal_selector": "#indeed-apply-widget",
+      "expected_capability": {
+        "can_auto_fill": true,
+        "requires_external_redirect": false,
+        "manual_fallback_mandatory": false,
+        "description": "Native Indeed Easy Apply modal with in-page standard multi-step progression.",
+        "known_limitations": [
+          "Indeed Phone Screen questions require explicit candidate input (AT-003)",
+          "CAPTCHA challenges must be completed manually by candidate (AT-010)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "indeed_external_redirect",
+      "name": "Indeed Redirect to Employer Site",
+      "url": "https://www.indeed.com/rc/clk?jk=abcdef0123456789&from=vj&pos=top",
+      "redirect_target": "https://acme.myworkdayjobs.com/en-US/Acme_Careers/job/Senior-Backend-Engineer_R-10293",
+      "provider": "indeed",
+      "portal_type": "workday_external",
+      "support_level": "assisted_manual",
+      "is_easy_apply": false,
+      "apply_button_selector": "a#viewJobButtonLink",
+      "expected_capability": {
+        "can_auto_fill": false,
+        "requires_external_redirect": true,
+        "manual_fallback_mandatory": true,
+        "description": "External Workday enterprise ATS requiring candidate authentication and multi-page upload.",
+        "known_limitations": [
+          "Automated form filling across arbitrary Workday tenants is prohibited; truth-in-advertising rules require open-in-browser flow (AT-010)",
+          "Candidate must manually paste clipboard materials into Workday fields (CAR-14)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "greenhouse_direct_ats",
+      "name": "Greenhouse Direct Board",
+      "url": "https://boards.greenhouse.io/stripe/jobs/6543210?gh_jid=6543210",
+      "provider": "greenhouse",
+      "portal_type": "greenhouse_direct",
+      "support_level": "native_easy_apply",
+      "is_easy_apply": true,
+      "apply_button_selector": "form#application_form input[type='submit']",
+      "expected_capability": {
+        "can_auto_fill": true,
+        "requires_external_redirect": false,
+        "manual_fallback_mandatory": false,
+        "description": "Standard single-page Greenhouse application form with predictable input naming.",
+        "known_limitations": [
+          "Custom screening questions without groundtruth facts require candidate input (AT-003)"
+        ]
+      }
+    },
+    {
+      "fixture_id": "corporate_external_taleo",
+      "name": "Oracle Taleo Legacy Corporate Careers",
+      "url": "https://oracle.taleo.net/careersection/2/jobdetail.ftl?job=24000ABC",
+      "provider": "taleo",
+      "portal_type": "taleo_external",
+      "support_level": "assisted_manual",
+      "is_easy_apply": false,
+      "expected_capability": {
+        "can_auto_fill": false,
+        "requires_external_redirect": true,
+        "manual_fallback_mandatory": true,
+        "description": "Legacy multi-frame enterprise portal. Live automation unsupported; open in browser.",
+        "known_limitations": [
+          "Unsupported legacy frames; automated submissions fail closed (AT-010)"
+        ]
+      }
+    }
+  ]
+}

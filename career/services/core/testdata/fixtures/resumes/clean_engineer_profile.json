@@ -1,0 +1,41 @@
+{
+  "id": "cand_001_clean",
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "title": "Staff Backend Engineer",
+  "location": "San Francisco, CA",
+  "confirmed_facts": [
+    {
+      "id": "fact_01",
+      "category": "experience",
+      "text": "10 years of professional software development experience in Go and Distributed Systems",
+      "confidence": 1.0,
+      "is_verified": true,
+      "privacy_tier": "public"
+    },
+    {
+      "id": "fact_02",
+      "category": "skills",
+      "text": "Go, PostgreSQL, Redis, Kubernetes, Distributed Systems, Microservices",
+      "confidence": 1.0,
+      "is_verified": true,
+      "privacy_tier": "public"
+    },
+    {
+      "id": "fact_03",
+      "category": "salary",
+      "text": "Target base salary is $180,000 USD",
+      "confidence": 0.95,
+      "is_verified": true,
+      "privacy_tier": "owner_private"
+    },
+    {
+      "id": "fact_04",
+      "category": "legal_eligibility",
+      "text": "Authorized to work in the United States without sponsorship",
+      "confidence": 1.0,
+      "is_verified": true,
+      "privacy_tier": "owner_private"
+    }
+  ]
+}

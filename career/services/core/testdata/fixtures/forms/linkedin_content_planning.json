@@ -1,0 +1,109 @@
+{
+  "version": "1.0.0",
+  "task": "IMP-LI-14",
+  "generated_at": "2026-09-20T13:40:00Z",
+  "authoritative_references": [
+    "LI-14",
+    "AT-018",
+    "IMP-LI-11",
+    "FND-008",
+    "SRC-L2",
+    "AT-007",
+    "AT-010"
+  ],
+  "scenarios": [
+    {
+      "id": "scenario-repurpose-blog-multi-format",
+      "name": "Repurpose Technical Blog to 5 LinkedIn Formats",
+      "workspace_id": "ws-career-prod",
+      "source_artifact": {
+        "artifact_id": "art-eng-blog-001",
+        "title": "Scaling Distributed Caches: From 10k to 1M QPS with Redis & Go",
+        "artifact_type": "technical_blog",
+        "raw_text": "Scaling our distributed caching layer from 10,000 to 1,000,000 queries per second required three critical architectural pivots:\n1. Moving from naive cache-aside to deterministic read-through caching with single-flight mutex coalescing.\n2. Partitioning hot keys across consistent hashing rings with virtual nodes to eliminate cache cluster hot-spots.\n3. Implementing jittered TTL expiration to prevent catastrophic thundering herd effects during batch cache evictions.\n\nKey lesson: 90% of cache degradation at peak is self-inflicted by lock-step expiration and un-throttled cache stampedes. By instrumenting distributed tracing with OpenTelemetry and pinning p99 latencies below 4ms, we cut Redis cluster CPU utilization by 42% while handling 100x traffic.",
+        "author": "SRE Lead",
+        "tags": ["distributed-systems", "redis", "golang", "scalability", "caching"]
+      },
+      "target_formats": [
+        "single_thought",
+        "carousel_outline",
+        "actionable_checklist",
+        "contrarian_breakdown",
+        "interview_qa_spotlight"
+      ],
+      "expected_output_formats": {
+        "single_thought": {
+          "min_length": 80,
+          "contains": ["90% of cache degradation at peak is self-inflicted", "#distributed-systems"]
+        },
+        "carousel_outline": {
+          "slide_count": 5,
+          "slides_contain": ["Slide 1: Scaling Distributed Caches", "Slide 5: Takeaway"]
+        },
+        "actionable_checklist": {
+          "checklist_items_min": 3,
+          "contains": ["Deterministic read-through with single-flight", "Consistent hashing rings", "Jittered TTL expiration"]
+        },
+        "contrarian_breakdown": {
+          "contains": ["The Common Myth", "The Reality", "Architectural Pivot"]
+        },
+        "interview_qa_spotlight": {
+          "contains": ["Question:", "Principal Engineer Answer:"]
+        }
+      }
+    },
+    {
+      "id": "scenario-dst-safe-scheduling",
+      "name": "DST Transition Aware Calendar Slot Allocation (AT-018 & FND-008)",
+      "workspace_id": "ws-career-prod",
+      "user_timezone": "America/New_York",
+      "requested_slot_local": "2026-11-01T09:00:00-05:00",
+      "dst_transition_context": {
+        "transition_date": "2026-11-01",
+        "description": "Fall Back: EDT (UTC-4) to EST (UTC-5) transition at 02:00 local time",
+        "prev_offset_hours": -4,
+        "next_offset_hours": -5
+      },
+      "expected_utc_timestamp": "2026-11-01T14:00:00Z",
+      "collision_detection_required": true,
+      "max_daily_budget": 2
+    },
+    {
+      "id": "scenario-tamper-invalidation-multitenant",
+      "name": "Tamper Invalidation upon Content Mutation & Workspace Isolation (AT-007)",
+      "workspace_alpha": {
+        "workspace_id": "ws-alpha",
+        "plan_id": "plan-alpha-101",
+        "title": "Alpha Sprint Retrospective",
+        "initial_status": "approved",
+        "hmac_secret": "secret-alpha-key-at-007-compliance",
+        "mutation_payload": {
+          "content_body": "Tampered text injected post approval"
+        },
+        "expected_status_post_mutation": "draft",
+        "expected_approval_token_cleared": true
+      },
+      "workspace_beta": {
+        "workspace_id": "ws-beta",
+        "plan_id": "plan-beta-202",
+        "query_target": "plan-alpha-101",
+        "expected_error": "not_found_or_access_denied"
+      }
+    },
+    {
+      "id": "scenario-direct-autopublish-rejection",
+      "name": "Rejection of Headless Direct Autopublish (AT-010 & REQ-015)",
+      "workspace_id": "ws-career-prod",
+      "plan_id": "plan-strict-compliance-01",
+      "attempted_action": "direct_headless_publish",
+      "expected_rejection": {
+        "error_code": "DIRECT_AUTOPUBLISH_DISALLOWED",
+        "message": "Direct automated background publishing is disabled by governance (AT-010). Please use 1-click clipboard export or LinkedIn Compose deep-link.",
+        "allowed_alternatives": [
+          "clipboard_copy_formatted",
+          "compose_deep_link"
+        ]
+      }
+    }
+  ]
+}

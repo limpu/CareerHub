@@ -1,0 +1,68 @@
+{
+  "form_id": "form_easy_apply_001",
+  "title": "Senior Systems Architect - Standard Easy Apply",
+  "sections": [
+    {
+      "section_id": "contact_info",
+      "fields": [
+        {
+          "field_id": "f_name",
+          "label": "Full Name",
+          "type": "text",
+          "required": true,
+          "fact_category": "contact"
+        },
+        {
+          "field_id": "f_email",
+          "label": "Email Address",
+          "type": "email",
+          "required": true,
+          "fact_category": "contact"
+        }
+      ]
+    },
+    {
+      "section_id": "eligibility_sensitive",
+      "fields": [
+        {
+          "field_id": "f_sponsorship",
+          "label": "Will you now or in the future require sponsorship for employment visa status?",
+          "type": "radio",
+          "options": ["Yes", "No"],
+          "required": true,
+          "fact_category": "sponsorship",
+          "is_sensitive": true
+        },
+        {
+          "field_id": "f_legal_work",
+          "label": "Are you legally authorized to work in the country of employment?",
+          "type": "radio",
+          "options": ["Yes", "No"],
+          "required": true,
+          "fact_category": "legal_eligibility",
+          "is_sensitive": true
+        },
+        {
+          "field_id": "f_salary_expectation",
+          "label": "What is your expected annual base compensation (USD)?",
+          "type": "number",
+          "required": false,
+          "fact_category": "salary",
+          "is_sensitive": true
+        }
+      ]
+    },
+    {
+      "section_id": "qualifications",
+      "fields": [
+        {
+          "field_id": "f_years_experience",
+          "label": "How many years of work experience do you have with Go?",
+          "type": "number",
+          "required": true,
+          "fact_category": "experience"
+        }
+      ]
+    }
+  ]
+}

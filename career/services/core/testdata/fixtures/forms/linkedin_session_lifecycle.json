@@ -1,0 +1,79 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "secure_session_initialization",
+      "description": "Initialize isolated session via vault credential reference, rejecting raw plaintext cookie/password pastes (AT-016, REQ-021)",
+      "tenant_id": "tenant-corp-01",
+      "owner_id": "usr-alex-001",
+      "account_id": "li:member_alex_101",
+      "incoming_payload": {
+        "vault_credential_ref": "vault://credentials/tenant-corp-01/linkedin/alex_oauth_v2",
+        "raw_cookie_paste": "",
+        "raw_password_paste": "",
+        "storage_mode": "per_owner_isolated"
+      },
+      "expected_session_status": "active",
+      "expected_plaintext_rejected": true,
+      "expected_vault_linked": true
+    },
+    {
+      "scenario_id": "plaintext_cookie_paste_rejected",
+      "description": "Enforce zero plaintext cookie or credential paste as default cloud connection (AT-016, REQ-021)",
+      "tenant_id": "tenant-corp-01",
+      "owner_id": "usr-alex-001",
+      "account_id": "li:member_alex_101",
+      "incoming_payload": {
+        "vault_credential_ref": "",
+        "raw_cookie_paste": "li_at=AQEDAT43521abcdef9876; JSESSIONID=\"ajax:12345\"",
+        "raw_password_paste": "SuperSecretPass123!",
+        "storage_mode": "cloud_plaintext"
+      },
+      "expected_session_status": "rejected",
+      "expected_error_code": "ERR_PLAINTEXT_CREDENTIAL_PROHIBITED",
+      "expected_remediation": "Credentials must be stored in encrypted vault or verified local environment; plaintext uploads are barred."
+    },
+    {
+      "scenario_id": "cross_owner_storage_isolation",
+      "description": "Per-owner isolated storage guarantees that tenant-corp-02 or foreign owner cannot read or mutate tenant-corp-01 sessions (AT-011, AT-012)",
+      "owner_a": {
+        "tenant_id": "tenant-corp-01",
+        "owner_id": "usr-alex-001",
+        "session_id": "sess-alex-alpha-001"
+      },
+      "owner_b": {
+        "tenant_id": "tenant-corp-02",
+        "owner_id": "usr-sarah-002",
+        "session_id": "sess-sarah-beta-002"
+      },
+      "expected_cross_tenant_access_allowed": false,
+      "expected_isolation_barrier_enforced": true
+    },
+    {
+      "scenario_id": "explicit_session_revocation",
+      "description": "Explicit revocation immediately revokes active session, purges in-memory keys, and halts dispatches (FND-009, LI-19)",
+      "tenant_id": "tenant-corp-01",
+      "owner_id": "usr-alex-001",
+      "session_id": "sess-alex-alpha-001",
+      "revocation_trigger": "user_explicit_disconnect",
+      "expected_post_revocation_status": "revoked",
+      "expected_active_lease_cleared": true,
+      "expected_dispatch_allowed_after_revoke": false
+    },
+    {
+      "scenario_id": "short_lived_viewer_lease_expiry",
+      "description": "Optional local viewer tool leases are strictly time-bound (e.g. 5 minutes) and auto-lock upon expiration (SRC-L3 profile_lease.py, daemon_lock.py)",
+      "tenant_id": "tenant-corp-01",
+      "owner_id": "usr-alex-001",
+      "session_id": "sess-alex-alpha-001",
+      "lease_request": {
+        "purpose": "local_profile_fact_verification",
+        "duration_seconds": 300,
+        "requires_user_supervision": true
+      },
+      "expected_initial_lease_status": "active",
+      "simulated_elapsed_seconds": 305,
+      "expected_expired_lease_status": "expired",
+      "expected_subsequent_access_blocked": true
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LinkedInCompanyFollowFixture",
+  "description": "Groundtruth test fixtures for target company watchlist, batch follow planning, safe pacing budgets, and AT-010 truth-in-advertising enforcement",
+  "scenarios": {
+    "standard_company_watchlist_and_batch_follow": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-001",
+      "watchlist_items": [
+        {
+          "item_id": "cwl-001",
+          "company_record_id": "comp-rec-001",
+          "company_name": "Databricks",
+          "universal_name": "databricks",
+          "domain": "databricks.com",
+          "priority": "high",
+          "target_reason": "Scaling Apache Spark, Ray, and Lakehouse infrastructure teams",
+          "tags": ["cloud", "data-infrastructure", "ai"],
+          "status": "active"
+        },
+        {
+          "item_id": "cwl-002",
+          "company_record_id": "comp-rec-002",
+          "company_name": "Snowflake",
+          "universal_name": "snowflake-computing",
+          "domain": "snowflake.com",
+          "priority": "medium",
+          "target_reason": "Expanding hybrid tables and stream processing systems",
+          "tags": ["database", "cloud", "saas"],
+          "status": "active"
+        }
+      ],
+      "batch_plan": {
+        "plan_name": "Q3 Infrastructure Target Companies",
+        "pacing_interval_sec": 120,
+        "selected_item_ids": ["cwl-001", "cwl-002"]
+      },
+      "expected_generated_items": 2,
+      "expected_company_page_urls": [
+        "https://www.linkedin.com/company/databricks",
+        "https://www.linkedin.com/company/snowflake-computing"
+      ]
+    },
+    "company_deduplication_guardrail": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-001",
+      "existing_item": {
+        "item_id": "cwl-001",
+        "company_name": "Databricks",
+        "universal_name": "databricks"
+      },
+      "duplicate_attempt": {
+        "item_id": "cwl-003",
+        "company_name": "Databricks Inc",
+        "universal_name": "databricks"
+      },
+      "expected_error": "company_follow: company already present in target watchlist (AT-004, AT-007)"
+    },
+    "budget_exhaustion_and_throttling": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-001",
+      "initial_budget": {
+        "daily_limit": 2,
+        "weekly_limit": 10,
+        "daily_used": 2,
+        "weekly_used": 5
+      },
+      "attempted_action": "confirm_follow",
+      "expected_locked": true,
+      "expected_error": "company_follow: daily company follow limit exhausted, fail-closed throttling active (FND-011, REQ-010)"
+    },
+    "unsupported_automation_fail_closed": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-001",
+      "attempted_mode": "headless_auto_follow",
+      "expected_error": "company_follow: background headless follow mutation permanently rejected under platform truth-in-advertising policy (AT-010, REQ-009)"
+    }
+  }
+}

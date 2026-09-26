@@ -1,0 +1,78 @@
+{
+  "description": "Groundtruth test fixtures for IMP-LI-05 professional people and company discovery",
+  "scenarios": [
+    {
+      "scenario_id": "disc-eng-lead",
+      "description": "Discovery of Distributed Systems Architects in San Francisco for recruiting",
+      "criteria": {
+        "target_role": "Distributed Systems Architect",
+        "role_alternatives": ["Lead Systems Architect", "Principal Infrastructure Engineer"],
+        "industries": ["Software Development", "Cloud Infrastructure"],
+        "locations": ["San Francisco Bay Area", "Remote"],
+        "current_companies": ["CloudScale Systems", "Apex Dynamics"],
+        "connection_tiers": ["1st", "2nd"],
+        "exclusions": ["Manager", "Director", "Sales"],
+        "user_goal": "recruiting"
+      },
+      "expected_boolean_terms": [
+        "(\"Distributed Systems Architect\" OR \"Lead Systems Architect\" OR \"Principal Infrastructure Engineer\")",
+        "(\"CloudScale Systems\" OR \"Apex Dynamics\")",
+        "NOT (\"Manager\" OR \"Director\" OR \"Sales\")"
+      ]
+    },
+    {
+      "scenario_id": "disc-security-network",
+      "description": "Discovery of Security Researchers in Austin for networking and knowledge exchange",
+      "criteria": {
+        "target_role": "Lead Security Researcher",
+        "role_alternatives": ["Cryptography Engineer", "AppSec Lead"],
+        "industries": ["Computer & Network Security"],
+        "locations": ["Austin, TX"],
+        "current_companies": ["SecureMesh"],
+        "connection_tiers": ["1st"],
+        "exclusions": ["Intern", "Junior"],
+        "user_goal": "networking"
+      },
+      "expected_boolean_terms": [
+        "(\"Lead Security Researcher\" OR \"Cryptography Engineer\" OR \"AppSec Lead\")",
+        "(\"SecureMesh\")",
+        "NOT (\"Intern\" OR \"Junior\")"
+      ]
+    },
+    {
+      "scenario_id": "disc-protected-attribute-rejection",
+      "description": "Criteria containing prohibited protected attributes that must be rejected",
+      "criteria": {
+        "target_role": "Backend Engineer",
+        "industries": ["Fintech"],
+        "locations": ["New York, NY"],
+        "custom_filters": {
+          "candidate_age": "under_30",
+          "gender_preference": "female"
+        },
+        "user_goal": "recruiting"
+      },
+      "should_reject": true
+    }
+  ],
+  "url_normalization_cases": [
+    {
+      "raw_url": "https://www.linkedin.com/in/sarah-chen-arch-9821a?miniProfileUrn=urn%3Ali%3Afsd_profile%3AACoAABCDE&trackingId=abc12345",
+      "expected_normalized": "https://www.linkedin.com/in/sarah-chen-arch-9821a",
+      "entity_type": "person",
+      "slug": "sarah-chen-arch-9821a"
+    },
+    {
+      "raw_url": "https://linkedin.com/company/cloudscale-systems/?trk=public_profile_topcard-current-company",
+      "expected_normalized": "https://www.linkedin.com/company/cloudscale-systems",
+      "entity_type": "company",
+      "slug": "cloudscale-systems"
+    },
+    {
+      "raw_url": "linkedin.com/in/elena-rostova-sec/",
+      "expected_normalized": "https://www.linkedin.com/in/elena-rostova-sec",
+      "entity_type": "person",
+      "slug": "elena-rostova-sec"
+    }
+  ]
+}

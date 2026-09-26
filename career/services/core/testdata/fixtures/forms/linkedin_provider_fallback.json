@@ -1,0 +1,123 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "healthy_enterprise_primary_route",
+      "description": "Primary enterprise adapter is healthy with granted scopes, successfully fulfilling permitted action without fallback",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "action": "identity_read",
+      "required_permission": "read_identity",
+      "providers": [
+        {
+          "provider_id": "prov-li-enterprise-01",
+          "name": "LinkedIn Official Enterprise Partner API",
+          "adapter_type": "official_enterprise_api",
+          "tier": 1,
+          "supported_actions": ["identity_read", "profile_import", "post_authoring_assisted"],
+          "expected_scopes": ["openid", "profile", "email", "w_member_social"],
+          "granted_scopes": ["openid", "profile", "email", "w_member_social"],
+          "health_status": "healthy",
+          "latency_ms": 115,
+          "consecutive_failures": 0
+        },
+        {
+          "provider_id": "prov-li-oidc-02",
+          "name": "Consumer OIDC Basic Auth App",
+          "adapter_type": "consumer_oidc_app",
+          "tier": 2,
+          "supported_actions": ["identity_read"],
+          "expected_scopes": ["openid", "profile", "email"],
+          "granted_scopes": ["openid", "profile", "email"],
+          "health_status": "healthy",
+          "latency_ms": 180,
+          "consecutive_failures": 0
+        }
+      ],
+      "expected_dispatched_provider": "prov-li-enterprise-01",
+      "expected_fallback_invoked": false,
+      "expected_success": true
+    },
+    {
+      "scenario_id": "degraded_primary_graceful_fallback_oidc",
+      "description": "Primary enterprise adapter encounters rate limit (429), gracefully degrades to permitted secondary OIDC adapter for identity_read",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "action": "identity_read",
+      "required_permission": "read_identity",
+      "providers": [
+        {
+          "provider_id": "prov-li-enterprise-01",
+          "name": "LinkedIn Official Enterprise Partner API",
+          "adapter_type": "official_enterprise_api",
+          "tier": 1,
+          "supported_actions": ["identity_read", "profile_import", "post_authoring_assisted"],
+          "expected_scopes": ["openid", "profile", "email", "w_member_social"],
+          "granted_scopes": ["openid", "profile", "email", "w_member_social"],
+          "health_status": "rate_limited",
+          "latency_ms": 2840,
+          "consecutive_failures": 3,
+          "last_error_message": "HTTP 429 Too Many Requests: Upstream LinkedIn API rate limit bucket exhausted"
+        },
+        {
+          "provider_id": "prov-li-oidc-02",
+          "name": "Consumer OIDC Basic Auth App",
+          "adapter_type": "consumer_oidc_app",
+          "tier": 2,
+          "supported_actions": ["identity_read"],
+          "expected_scopes": ["openid", "profile", "email"],
+          "granted_scopes": ["openid", "profile", "email"],
+          "health_status": "healthy",
+          "latency_ms": 165,
+          "consecutive_failures": 0
+        }
+      ],
+      "expected_dispatched_provider": "prov-li-oidc-02",
+      "expected_fallback_invoked": true,
+      "expected_fallback_reason": "Primary provider prov-li-enterprise-01 rate_limited; degrading to tier 2 fallback",
+      "expected_success": true
+    },
+    {
+      "scenario_id": "forbidden_action_fail_closed_no_bypass",
+      "description": "Unsupported/prohibited automated direct messaging action is rejected fail-closed; fallback does not bypass permission boundary",
+      "tenant_id": "tenant-corp-01",
+      "workspace_id": "ws-alpha",
+      "action": "automated_headless_messaging",
+      "required_permission": "direct_messaging_unsupervised",
+      "providers": [
+        {
+          "provider_id": "prov-li-enterprise-01",
+          "name": "LinkedIn Official Enterprise Partner API",
+          "adapter_type": "official_enterprise_api",
+          "tier": 1,
+          "supported_actions": ["identity_read", "profile_import", "post_authoring_assisted"],
+          "expected_scopes": ["openid", "profile", "email"],
+          "granted_scopes": ["openid", "profile", "email"],
+          "health_status": "healthy",
+          "latency_ms": 120,
+          "consecutive_failures": 0
+        },
+        {
+          "provider_id": "prov-li-local-session-03",
+          "name": "Local User-Supervised Session",
+          "adapter_type": "local_supervised_session",
+          "tier": 3,
+          "supported_actions": ["profile_import", "public_feed_read"],
+          "expected_scopes": [],
+          "granted_scopes": [],
+          "health_status": "healthy",
+          "latency_ms": 90,
+          "consecutive_failures": 0
+        }
+      ],
+      "expected_error": "ErrActionUnsupportedOrProhibited",
+      "expected_fallback_invoked": false,
+      "expected_success": false
+    },
+    {
+      "scenario_id": "credential_scrubber_in_diagnostics_at016",
+      "description": "Diagnostic probe error text containing authorization secrets is redacted by AT-016 regex scrubber",
+      "raw_diagnostic_error": "Failed probe for prov-li-enterprise-01 with header Authorization: Bearer aq893012_secret_token_li_9921 and cookie li_at=AQEDATP9421_secret_cookie at https://api.linkedin.com/v2/userinfo?client_secret=super_secret_key_8849",
+      "expected_redacted_text": "Failed probe for prov-li-enterprise-01 with header Authorization: Bearer [REDACTED_SECRET] and cookie li_at=[REDACTED_SECRET] at https://api.linkedin.com/v2/userinfo?client_secret=[REDACTED_SECRET]"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "clusters": [
+    {
+      "cluster_id": "cluster_stripe_backend_001",
+      "canonical_title": "Staff Software Engineer, Core Payments",
+      "canonical_company": "Stripe, Inc.",
+      "canonical_location": "San Francisco, CA (Hybrid)",
+      "canonical_url": "https://stripe.com/jobs/listings/staff-software-engineer-core-payments-12345",
+      "listings": [
+        {
+          "board": "greenhouse",
+          "listing_id": "gh_12345",
+          "title": "Staff Software Engineer - Core Payments",
+          "company": "Stripe",
+          "location": "San Francisco, CA",
+          "url": "https://boards.greenhouse.io/stripe/jobs/12345",
+          "salary_min": 190000,
+          "salary_max": 240000,
+          "is_duplicate_of_canonical": true
+        },
+        {
+          "board": "linkedin",
+          "listing_id": "li_987654321",
+          "title": "Staff Software Engineer, Core Payments",
+          "company": "Stripe",
+          "location": "San Francisco, CA (Hybrid)",
+          "url": "https://www.linkedin.com/jobs/view/987654321",
+          "salary_min": 190000,
+          "salary_max": 240000,
+          "is_duplicate_of_canonical": true
+        },
+        {
+          "board": "indeed",
+          "listing_id": "ind_abcde12345",
+          "title": "Software Engineer - Payments Infrastructure",
+          "company": "Stripe",
+          "location": "San Francisco, CA",
+          "url": "https://www.indeed.com/viewjob?jk=abcde12345",
+          "salary_min": 185000,
+          "salary_max": 235000,
+          "is_duplicate_of_canonical": false,
+          "ambiguous_match": true,
+          "ambiguity_reason": "Title variant 'Infrastructure' vs 'Staff Core Payments' requires reviewer confirmation"
+        }
+      ]
+    }
+  ]
+}

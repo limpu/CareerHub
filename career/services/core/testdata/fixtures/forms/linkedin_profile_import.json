@@ -1,0 +1,119 @@
+{
+  "version": "1.0",
+  "domain": "linkedin_profile_import",
+  "description": "Groundtruth fixture suite for LinkedIn own-profile scan, import, and fallback modes (IMP-LI-02, LI-02, REQ-004, AT-001, AT-010).",
+  "scenarios": [
+    {
+      "scenario_id": "official_zip_archive_complete",
+      "description": "Ingestion from official LinkedIn Basic_LinkedInData.zip archive containing standard CSV exports.",
+      "input_type": "archive_zip",
+      "archive_files": {
+        "Profile.csv": "First Name,Last Name,Maiden Name,Address,Birth Date,Headline,Summary,Industry,Zip Code,Geo Location,Twitter Handles,Websites\nSarah,Connor,,San Francisco CA,,Staff Infrastructure Engineer,\"Distributed systems engineer with 10+ years scaling cloud platforms.\",Computer Software,94105,San Francisco Bay Area,,https://sarahconnor.dev",
+        "Positions.csv": "Company Name,Title,Description,Location,Started On,Finished On\nNexus Cloud,Staff Systems Engineer,\"Architected multi-region Kubernetes clusters with zero downtime.\",San Francisco CA,Feb 2022,\nDataStream Inc,Senior Backend Engineer,\"Engineered high-throughput event streaming with Apache Kafka and Go.\",San Jose CA,May 2018,Jan 2022\nCyberdyne Systems,Software Engineer,\"Built telemetry pipelines and monitoring agents.\",Sunnyvale CA,Jun 2015,Apr 2018",
+        "Education.csv": "School Name,Start Date,End Date,Notes,Degree Name,Activities\nUniversity of California Berkeley,Aug 2011,May 2015,,Bachelor of Science in Computer Science,\nStanford Online,Jan 2020,Dec 2020,,Graduate Certificate in Distributed Systems,",
+        "Skills.csv": "Name\nGo\nKubernetes\nDistributed Systems\nApache Kafka\nPostgreSQL\nDocker\nTerraform",
+        "Certifications.csv": "Name,Url,Authority,Started On,Finished On,License Number\nCertified Kubernetes Administrator (CKA),https://cncf.io,Cloud Native Computing Foundation,Oct 2021,Oct 2024,CKA-10293847"
+      },
+      "expected_extraction": {
+        "display_name": "Sarah Connor",
+        "headline": "Staff Infrastructure Engineer",
+        "summary": "Distributed systems engineer with 10+ years scaling cloud platforms.",
+        "location": "San Francisco Bay Area",
+        "industry": "Computer Software",
+        "experiences_count": 3,
+        "education_count": 2,
+        "skills_count": 7,
+        "certifications_count": 1,
+        "source_mode": "archive_zip"
+      }
+    },
+    {
+      "scenario_id": "pasted_profile_text_unstructured",
+      "description": "User pastes copied text directly from their public LinkedIn profile page.",
+      "input_type": "manual_paste",
+      "raw_text": "David Miller\nLead Data Engineer at FinScale\nGreater New York City Area • 500+ connections\n\nAbout\nPassionate data platform engineer focusing on real-time data warehouses, Spark, and ClickHouse.\n\nExperience\nFinScale\nLead Data Engineer\nJan 2023 - Present • 3 yrs 3 mos\nNew York, United States\nLeading the data platform team handling 10 TB/day of transaction events.\n\nQuantum Analytics\nSenior Data Pipeline Engineer\nMar 2019 - Dec 2022 • 3 yrs 10 mos\nBoston, MA\nBuilt streaming ETL with Apache Flink and Delta Lake.\n\nEducation\nMIT\nMaster of Science - MS, Computational Science\n2017 - 2019\n\nSkills\nPython • Apache Spark • ClickHouse • Apache Flink • Snowflake • SQL",
+      "expected_extraction": {
+        "display_name": "David Miller",
+        "headline": "Lead Data Engineer at FinScale",
+        "location": "Greater New York City Area",
+        "experiences_count": 2,
+        "education_count": 1,
+        "skills_count": 6,
+        "source_mode": "manual_paste"
+      }
+    },
+    {
+      "scenario_id": "enterprise_api_direct_snapshot",
+      "description": "Enterprise partner token with r_fullprofile scope enables direct API structured ingestion.",
+      "input_type": "enterprise_api",
+      "api_response_payload": {
+        "id": "urn:li:person:ent_9901",
+        "firstName": {"localized": {"en_US": "Elena"}},
+        "lastName": {"localized": {"en_US": "Rostova"}},
+        "headline": {"localized": {"en_US": "Principal Site Reliability Architect at GlobalBank"}},
+        "summary": "SRE architect focused on chaos engineering and financial payment rail uptime.",
+        "industryUrn": "urn:li:fs_industry:43",
+        "positions": [
+          {
+            "companyName": "GlobalBank",
+            "title": "Principal Site Reliability Architect",
+            "location": "London, UK",
+            "startDate": {"year": 2021, "month": 6},
+            "isCurrent": true,
+            "description": "Leading 99.999% tier-1 payment core reliability."
+          },
+          {
+            "companyName": "CloudGuard Systems",
+            "title": "Senior Reliability Engineer",
+            "location": "Cambridge, UK",
+            "startDate": {"year": 2017, "month": 9},
+            "endDate": {"year": 2021, "month": 5},
+            "isCurrent": false,
+            "description": "Automated incident response and runbooks."
+          }
+        ],
+        "educations": [
+          {
+            "schoolName": "University of Cambridge",
+            "degreeName": "Master of Engineering (MEng)",
+            "fieldOfStudy": "Computer Science",
+            "startDate": {"year": 2013},
+            "endDate": {"year": 2017}
+          }
+        ],
+        "skills": ["SRE", "Chaos Engineering", "Linux", "Kubernetes", "Prometheus", "Golang"]
+      },
+      "expected_extraction": {
+        "display_name": "Elena Rostova",
+        "headline": "Principal Site Reliability Architect at GlobalBank",
+        "experiences_count": 2,
+        "education_count": 1,
+        "skills_count": 6,
+        "source_mode": "enterprise_api"
+      }
+    },
+    {
+      "scenario_id": "consumer_oidc_basic_fallback",
+      "description": "Standard consumer OIDC token attempts full profile scan. System returns basic identity only and provides explicit fallback to ZIP archive (AT-010).",
+      "input_type": "oidc_basic_only",
+      "oidc_claims": {
+        "sub": "std_consumer_8821",
+        "name": "Marcus Vance",
+        "email": "marcus.vance@example.com",
+        "picture": "https://media.licdn.com/dms/image/v2/std_photo.jpg",
+        "locale": "en_US"
+      },
+      "expected_extraction": {
+        "display_name": "Marcus Vance",
+        "email": "marcus.vance@example.com",
+        "experiences_count": 0,
+        "education_count": 0,
+        "skills_count": 0,
+        "source_mode": "oidc_basic_only",
+        "requires_fallback": true,
+        "recommended_fallback": "user_export_upload",
+        "truth_in_advertising_note": "Standard LinkedIn Sign-in (OpenID Connect) provides identity claims only. Full career history API access is restricted to LinkedIn Talent Partners. Please upload your Basic_LinkedInData.zip export."
+      }
+    }
+  ]
+}

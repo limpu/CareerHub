@@ -1,0 +1,190 @@
+{
+  "version": "1.0",
+  "domain": "linkedin_capabilities_inspection",
+  "description": "Groundtruth fixture suite for LinkedIn capability inspection, scope separation, and fail-closed action gating (IMP-LI-01, LI-01, REQ-004, REQ-021, AT-010, AT-016).",
+  "scenarios": [
+    {
+      "scenario_id": "standard_oauth_signin_only",
+      "description": "User connected via standard OpenID Connect. Identity sign-in granted; profile read partial; publishing, messaging, and apply are unavailable.",
+      "connection_data": {
+        "user_id": "usr-cand-101",
+        "member_id": "urn:li:person:std_user_101",
+        "display_name": "Jane Doe",
+        "email": "jane.doe@example.com",
+        "granted_scopes": ["openid", "profile", "email"],
+        "token_status": "active",
+        "expires_in_hours": 720
+      },
+      "expected_connection_status": "connected",
+      "expected_granted_capabilities_count": 2,
+      "expected_denied_or_unavailable_count": 4,
+      "expected_capabilities": [
+        {
+          "capability_id": "identity_signin",
+          "is_granted": true,
+          "status": "granted"
+        },
+        {
+          "capability_id": "basic_profile_read",
+          "is_granted": true,
+          "status": "granted"
+        },
+        {
+          "capability_id": "career_history_import",
+          "is_granted": false,
+          "status": "unavailable_partner_only",
+          "fallback_mode": "user_export_upload"
+        },
+        {
+          "capability_id": "content_publish",
+          "is_granted": false,
+          "status": "denied"
+        },
+        {
+          "capability_id": "direct_messaging",
+          "is_granted": false,
+          "status": "unavailable_partner_only",
+          "fallback_mode": "manual_clipboard_assist"
+        },
+        {
+          "capability_id": "automated_easy_apply",
+          "is_granted": false,
+          "status": "unsupported_platform",
+          "fallback_mode": "manual_clipboard_assist"
+        }
+      ],
+      "actions_to_test": [
+        {
+          "action": "sign_in",
+          "expected_allowed": true
+        },
+        {
+          "action": "publish_post",
+          "expected_allowed": false,
+          "expected_error": "capability not granted by credential scopes"
+        },
+        {
+          "action": "send_direct_message",
+          "expected_allowed": false,
+          "expected_error": "direct messaging requires LinkedIn enterprise partner approval; automated live background execution is prohibited (AT-010)"
+        },
+        {
+          "action": "automated_easy_apply",
+          "expected_allowed": false,
+          "expected_error": "automated Easy Apply background write is unsupported on live LinkedIn (AT-010)"
+        }
+      ]
+    },
+    {
+      "scenario_id": "content_creator_elevated",
+      "description": "User has connected with standard OIDC and elevated member UGC posting permissions. Publishing is allowed; messaging and automated apply remain restricted.",
+      "connection_data": {
+        "user_id": "usr-cand-102",
+        "member_id": "urn:li:person:creator_102",
+        "display_name": "Alex Smith",
+        "email": "alex.smith@example.com",
+        "granted_scopes": ["openid", "profile", "email", "w_member_social"],
+        "token_status": "active",
+        "expires_in_hours": 1440
+      },
+      "expected_connection_status": "connected",
+      "expected_granted_capabilities_count": 3,
+      "expected_denied_or_unavailable_count": 3,
+      "expected_capabilities": [
+        {
+          "capability_id": "identity_signin",
+          "is_granted": true,
+          "status": "granted"
+        },
+        {
+          "capability_id": "content_publish",
+          "is_granted": true,
+          "status": "granted"
+        },
+        {
+          "capability_id": "direct_messaging",
+          "is_granted": false,
+          "status": "unavailable_partner_only"
+        }
+      ],
+      "actions_to_test": [
+        {
+          "action": "publish_post",
+          "expected_allowed": true
+        },
+        {
+          "action": "send_direct_message",
+          "expected_allowed": false
+        }
+      ]
+    },
+    {
+      "scenario_id": "enterprise_partner_full",
+      "description": "Partner application credentials with elevated marketing and talent scopes granted.",
+      "connection_data": {
+        "user_id": "usr-cand-103",
+        "member_id": "urn:li:person:partner_103",
+        "display_name": "Tech Corp Recruiter",
+        "email": "recruiter@techcorp.example.com",
+        "granted_scopes": [
+          "openid",
+          "profile",
+          "email",
+          "r_basicprofile",
+          "r_fullprofile",
+          "w_member_social",
+          "r_messages",
+          "w_messages",
+          "r_1st_connections_size"
+        ],
+        "token_status": "active",
+        "expires_in_hours": 720
+      },
+      "expected_connection_status": "connected",
+      "expected_granted_capabilities_count": 5,
+      "expected_denied_or_unavailable_count": 1,
+      "actions_to_test": [
+        {
+          "action": "publish_post",
+          "expected_allowed": true
+        },
+        {
+          "action": "send_direct_message",
+          "expected_allowed": true
+        },
+        {
+          "action": "automated_easy_apply",
+          "expected_allowed": false,
+          "expected_error": "automated Easy Apply background write is unsupported on live LinkedIn (AT-010)"
+        }
+      ]
+    },
+    {
+      "scenario_id": "expired_or_revoked_token",
+      "description": "Expired or revoked LinkedIn token. System transitions to reauth_required and fails closed on all actions.",
+      "connection_data": {
+        "user_id": "usr-cand-104",
+        "member_id": "urn:li:person:expired_104",
+        "display_name": "Morgan Lee",
+        "email": "morgan.lee@example.com",
+        "granted_scopes": ["openid", "profile", "email", "w_member_social"],
+        "token_status": "expired",
+        "expires_in_hours": -48
+      },
+      "expected_connection_status": "reauth_required",
+      "expected_granted_capabilities_count": 0,
+      "actions_to_test": [
+        {
+          "action": "publish_post",
+          "expected_allowed": false,
+          "expected_error": "token is expired or revoked; reauthentication required (AT-016)"
+        },
+        {
+          "action": "sign_in",
+          "expected_allowed": false,
+          "expected_error": "token is expired or revoked; reauthentication required (AT-016)"
+        }
+      ]
+    }
+  ]
+}

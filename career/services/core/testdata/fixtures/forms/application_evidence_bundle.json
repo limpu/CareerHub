@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ApplicationEvidenceBundleFixtures",
+  "description": "Groundtruth application evidence and document bundle fixtures for CAR-16, AT-005, and AT-011",
+  "scenarios": [
+    {
+      "scenario_id": "greenhouse_direct_verified_bundle",
+      "description": "Direct ATS submission bundle containing exact job snapshot, tailored resume hash, cover letter, submitted answers, and verified receipt code.",
+      "bundle": {
+        "bundle_id": "ev-bundle-gh-stripe-001",
+        "application_record_id": "app-rec-102",
+        "user_id": "user-candidate-stripe",
+        "job_snapshot": {
+          "title": "Senior Distributed Systems Engineer (Go)",
+          "company": "Stripe",
+          "location": "San Francisco, CA / Remote",
+          "job_type": "full_time",
+          "required_skills": ["Go", "Distributed Systems", "Kafka", "PostgreSQL", "Kubernetes"],
+          "direct_apply_url": "https://boards.greenhouse.io/stripe/jobs/5412987#apply",
+          "description_snippet": "We are seeking a Senior Distributed Systems Engineer to scale our core financial infrastructure using Go and modern consensus engines.",
+          "captured_at": "2026-09-15T10:00:00Z"
+        },
+        "resume_artifact": {
+          "resume_id": "res-tailored-stripe-v2",
+          "version": "2.1",
+          "format": "pdf",
+          "content_checksum": "a89efb31d0449bc2e11893cfa881b49048a609d94981bcde21904aef7218314a",
+          "document_path": "storage/resumes/user-candidate-stripe/res-tailored-stripe-v2.pdf",
+          "content_snippet": "Senior Engineer with 6+ years specializing in distributed systems, Raft consensus, and high-throughput Go services."
+        },
+        "cover_letter_artifact": {
+          "cover_letter_id": "cl-stripe-v1",
+          "content": "Dear Stripe Engineering Team, I am excited to apply for the Senior Distributed Systems Engineer role. Having scaled financial ledgers in Go...",
+          "checksum": "c92841f9810a4ebcaef183c0192847aef9019283741920384719208347102938"
+        },
+        "question_answers": [
+          {
+            "question_id": "q-exp-years",
+            "question_text": "How many years of experience do you have with Go in production?",
+            "answer_value": "6",
+            "field_category": "experience"
+          },
+          {
+            "question_id": "q-work-auth",
+            "question_text": "Are you legally authorized to work in the United States without sponsorship?",
+            "answer_value": "Yes, authorized without sponsorship",
+            "field_category": "legal"
+          },
+          {
+            "question_id": "q-notice-period",
+            "question_text": "What is your current notice period?",
+            "answer_value": "2 weeks",
+            "field_category": "general"
+          },
+          {
+            "question_id": "q-github-url",
+            "question_text": "GitHub Profile URL",
+            "answer_value": "https://github.com/stripe-applicant",
+            "field_category": "links"
+          }
+        ],
+        "submission_timestamp": "2026-09-15T10:05:00Z",
+        "confirmation_type": "provider_receipt",
+        "provider_reference": "STRIPE-APP-GH-98412",
+        "scrubbed_artifacts": [
+          {
+            "artifact_id": "art-http-receipt-01",
+            "name": "greenhouse_api_response.json",
+            "mime_type": "application/json",
+            "scrubbed_content": "{\"status\":\"success\",\"id\":98412,\"confirmation\":\"STRIPE-APP-GH-98412\",\"headers\":{\"Authorization\":\"[REDACTED_BEARER_TOKEN]\"}}",
+            "original_checksum": "e1123498fca01928347aefbc9018237410928347102938471029384710293847"
+          }
+        ],
+        "privacy_tier": "owner_private"
+      }
+    },
+    {
+      "scenario_id": "workday_external_attested_bundle",
+      "description": "External Workday portal manual submission bundle with candidate attestation and scrubbed DOM snapshots.",
+      "bundle": {
+        "bundle_id": "ev-bundle-wd-partner-002",
+        "application_record_id": "app-rec-101",
+        "user_id": "user-candidate-cloud",
+        "job_snapshot": {
+          "title": "Senior Cloud Platform Architect",
+          "company": "Workday Enterprise Partner",
+          "location": "Austin, TX / Hybrid",
+          "job_type": "full_time",
+          "required_skills": ["Kubernetes", "AWS", "Terraform", "Go", "Architecture"],
+          "direct_apply_url": "https://acme.wd5.myworkdayjobs.com/en-US/AcmeCareers/job/Senior-Cloud-Platform-Architect_JR-1092",
+          "description_snippet": "Lead cloud platform architect responsible for multi-region infrastructure orchestration and developer experience.",
+          "captured_at": "2026-09-16T14:20:00Z"
+        },
+        "resume_artifact": {
+          "resume_id": "res-cloud-arch-v1",
+          "version": "1.0",
+          "format": "docx",
+          "content_checksum": "99f81a7bca0128374aefb9012837410293847102938471029384710293847102",
+          "document_path": "storage/resumes/user-candidate-cloud/res-cloud-arch-v1.docx",
+          "content_snippet": "Principal Cloud Architect with 8+ years designing zero-downtime AWS/Kubernetes foundations."
+        },
+        "question_answers": [
+          {
+            "question_id": "q-full-name",
+            "question_text": "Full Legal Name",
+            "answer_value": "Candidate Cloud",
+            "field_category": "contact"
+          },
+          {
+            "question_id": "q-total-exp",
+            "question_text": "Total Years in Cloud Architecture",
+            "answer_value": "8",
+            "field_category": "experience"
+          }
+        ],
+        "submission_timestamp": "2026-09-16T14:45:00Z",
+        "confirmation_type": "user_attestation",
+        "provider_reference": "MANUAL-ATTEST-WD-9941",
+        "scrubbed_artifacts": [
+          {
+            "artifact_id": "art-dom-snapshot-02",
+            "name": "workday_submission_screen.html",
+            "mime_type": "text/html",
+            "scrubbed_content": "<div class=\"confirmation\"><h3>Thank you for applying</h3><p>Session ID: WD-9941</p><span class=\"token\">[REDACTED_SESSION_COOKIE]</span></div>",
+            "original_checksum": "887aefb901283741029384710293847102938471029384710293847102938471"
+          }
+        ],
+        "privacy_tier": "owner_private"
+      }
+    },
+    {
+      "scenario_id": "tamper_detection_bundle",
+      "description": "Bundle demonstrating tamper detection where a field value has been modified after cryptographic hash sealing.",
+      "original_checksum": "7c88b9a10293847aef9012837410293847102938471029384710293847102938",
+      "tampered_field": "question_answers[0].answer_value",
+      "tampered_value": "10 years (modified maliciously)"
+    },
+    {
+      "scenario_id": "admin_access_denial_bundle",
+      "description": "Workspace admin attempted access without explicit resource grant; must be rejected per AT-011 and REQ-018.",
+      "user_id": "user-candidate-stripe",
+      "requesting_actor_id": "admin-workspace-lead",
+      "requesting_actor_role": "admin",
+      "has_explicit_grant": false,
+      "expected_error": "access denied: workspace admin cannot read member private application evidence without explicit grant (AT-011)"
+    }
+  ]
+}

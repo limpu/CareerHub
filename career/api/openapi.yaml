@@ -1,0 +1,364 @@
+openapi: 3.1.0
+info:
+  title: Career / LinkedIn / Social Platform API
+  description: Authoritative HTTP contract for Career management, LinkedIn networking, and Social content operations.
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+    description: Local Core API server
+
+paths:
+  /healthz:
+    get:
+      summary: Health check probe
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/v1/sections:
+    get:
+      summary: Primary platform sections overview
+      responses:
+        "200":
+          description: List of supported platform sections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SectionMeta"
+
+  /api/v1/auth/signup:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/auth/login:
+    post:
+      summary: Authenticate user session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/auth/me:
+    get:
+      summary: Current authenticated user details
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Authenticated user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/v1/career/profile:
+    get:
+      summary: Get confirmed career profile facts
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User profile and facts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareerProfile"
+    post:
+      summary: Add or update career profile fact
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileFactInput"
+      responses:
+        "201":
+          description: Fact recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileFact"
+
+  /api/v1/career/resumes:
+    get:
+      summary: List user master and tailored resume versions
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of resume versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResumeVersion"
+
+  /api/v1/career/applications:
+    get:
+      summary: List tracked job applications
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of job applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JobApplication"
+    post:
+      summary: Track a job application (draft or user-confirmed)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobApplicationInput"
+      responses:
+        "201":
+          description: Application tracked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobApplication"
+
+  /api/v1/social/posts:
+    get:
+      summary: List workspace social posts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: workspaceId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of social posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SocialPost"
+    post:
+      summary: Create a post draft
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SocialPostInput"
+      responses:
+        "201":
+          description: Post draft created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SocialPost"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    ErrorResponse:
+      description: Standardized error format
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, version, timestamp]
+      properties:
+        status: { type: string, example: "ok" }
+        version: { type: string, example: "0.1.0" }
+        timestamp: { type: string, format: date-time }
+
+    SectionMeta:
+      type: object
+      required: [id, name, description]
+      properties:
+        id: { type: string, enum: [career, linkedin, social] }
+        name: { type: string }
+        description: { type: string }
+
+    SignupRequest:
+      type: object
+      required: [email, password, fullName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        fullName: { type: string }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token: { type: string }
+        user: { $ref: "#/components/schemas/User" }
+
+    User:
+      type: object
+      required: [id, email, fullName, platformRole, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        fullName: { type: string }
+        platformRole: { type: string, enum: [super_admin, operator, standard] }
+        createdAt: { type: string, format: date-time }
+
+    CareerProfile:
+      type: object
+      required: [userId, facts]
+      properties:
+        userId: { type: string, format: uuid }
+        headline: { type: string }
+        summary: { type: string }
+        facts:
+          type: array
+          items: { $ref: "#/components/schemas/ProfileFact" }
+
+    ProfileFactInput:
+      type: object
+      required: [category, title]
+      properties:
+        category: { type: string, enum: [experience, education, skill, project, certification] }
+        title: { type: string }
+        organization: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        isCurrent: { type: boolean }
+        details: { type: array, items: { type: string } }
+
+    ProfileFact:
+      allOf:
+        - $ref: "#/components/schemas/ProfileFactInput"
+        - type: object
+          required: [id, userId, confirmed, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            userId: { type: string, format: uuid }
+            confirmed: { type: boolean }
+            createdAt: { type: string, format: date-time }
+
+    ResumeVersion:
+      type: object
+      required: [id, userId, versionNumber, title, isMaster, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        versionNumber: { type: integer }
+        title: { type: string }
+        templateId: { type: string }
+        isMaster: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    JobApplicationInput:
+      type: object
+      required: [jobTitle, companyName, jobUrl, status]
+      properties:
+        jobTitle: { type: string }
+        companyName: { type: string }
+        jobUrl: { type: string, format: uri }
+        status: { type: string, enum: [draft, applied, interviewing, rejected, offer] }
+        confirmationType: { type: string, enum: [provider_confirmed, user_confirmed, unconfirmed] }
+        appliedAt: { type: string, format: date-time }
+
+    JobApplication:
+      allOf:
+        - $ref: "#/components/schemas/JobApplicationInput"
+        - type: object
+          required: [id, userId, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            userId: { type: string, format: uuid }
+            createdAt: { type: string, format: date-time }
+
+    SocialPostInput:
+      type: object
+      required: [workspaceId, title, content, targetPlatforms]
+      properties:
+        workspaceId: { type: string, format: uuid }
+        title: { type: string }
+        content: { type: string }
+        targetPlatforms:
+          type: array
+          items: { type: string, enum: [linkedin, twitter, facebook, instagram, youtube] }
+        scheduledAt: { type: string, format: date-time }
+
+    SocialPost:
+      allOf:
+        - $ref: "#/components/schemas/SocialPostInput"
+        - type: object
+          required: [id, authorId, status, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            authorId: { type: string, format: uuid }
+            status: { type: string, enum: [draft, pending_approval, scheduled, published, failed] }
+            createdAt: { type: string, format: date-time }
+
+    ErrorDetail:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: "INVALID_REQUEST" }
+        message: { type: string, example: "Request validation failed" }
+        details: { type: object }

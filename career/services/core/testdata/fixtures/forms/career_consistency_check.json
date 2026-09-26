@@ -1,0 +1,151 @@
+{
+  "version": "1.0.0",
+  "domain": "career_consistency_check",
+  "invariant_guarantees": {
+    "CAR-24": "Show mismatched titles/dates/skills with source and precision; user decides which fact to retain",
+    "AT-007": "Human decision gatekeeper: candidate explicitly selects resolved fact; updates canonical profile with audit trail",
+    "AT-003": "Zero fabrication: unconfirmed source facts are never invented or assumed as defaults"
+  },
+  "scenarios": [
+    {
+      "scenario_id": "title_and_date_discrepancies",
+      "description": "Conflict across resume, profile, and LinkedIn for senior backend role: mismatched titles and divergent employment dates",
+      "master_profile_data": {
+        "user_id": "user-cand-101",
+        "experiences": [
+          {
+            "id": "exp-p1",
+            "company": "FastFintech Corp",
+            "title": "Lead Backend Architect",
+            "start_date": "2021-01-01T00:00:00Z",
+            "end_date": null,
+            "current": true
+          }
+        ],
+        "skills": ["Go", "Kafka", "PostgreSQL", "Docker", "Distributed Systems"]
+      },
+      "master_resume_data": {
+        "title": "Senior Backend Engineer",
+        "company": "FastFintech Corp",
+        "start_date": "2021-01-01T00:00:00Z",
+        "end_date": null,
+        "is_current": true,
+        "skills": ["Go", "Kafka", "PostgreSQL", "Docker"]
+      },
+      "linkedin_snapshot_data": {
+        "headline": "Staff Software Engineer at FastFintech Corp",
+        "experiences": [
+          {
+            "id": "exp-li-1",
+            "company": "FastFintech Corp",
+            "title": "Staff Software Engineer",
+            "start_date": "2021-03-01T00:00:00Z",
+            "end_date": "2024-12-31T00:00:00Z",
+            "current": false
+          }
+        ],
+        "skills": ["Go", "Kafka", "PostgreSQL", "Docker", "Rust", "GraphQL"]
+      },
+      "expected_mismatches_count": 3,
+      "expected_high_severity_count": 2,
+      "expected_score_range": [50.0, 75.0]
+    },
+    {
+      "scenario_id": "skill_coverage_differences",
+      "description": "Skills listed on LinkedIn (Rust, GraphQL) absent from resume; identified as low-severity coverage discrepancy",
+      "master_profile_data": {
+        "user_id": "user-cand-101",
+        "experiences": [
+          {
+            "id": "exp-p1",
+            "company": "FastFintech Corp",
+            "title": "Senior Backend Engineer",
+            "start_date": "2021-01-01T00:00:00Z",
+            "end_date": null,
+            "current": true
+          }
+        ],
+        "skills": ["Go", "Kafka", "PostgreSQL"]
+      },
+      "master_resume_data": {
+        "title": "Senior Backend Engineer",
+        "company": "FastFintech Corp",
+        "start_date": "2021-01-01T00:00:00Z",
+        "end_date": null,
+        "is_current": true,
+        "skills": ["Go", "Kafka", "PostgreSQL"]
+      },
+      "linkedin_snapshot_data": {
+        "headline": "Senior Backend Engineer",
+        "experiences": [
+          {
+            "id": "exp-li-1",
+            "company": "FastFintech Corp",
+            "title": "Senior Backend Engineer",
+            "start_date": "2021-01-01T00:00:00Z",
+            "end_date": null,
+            "current": true
+          }
+        ],
+        "skills": ["Go", "Kafka", "PostgreSQL", "Rust", "GraphQL"]
+      },
+      "expected_mismatches_count": 2,
+      "expected_high_severity_count": 0,
+      "expected_score_range": [85.0, 95.0]
+    },
+    {
+      "scenario_id": "human_resolution_and_audit_propagation",
+      "description": "Candidate evaluates mismatch on job title, decides to retain_profile with justification; updates profile and records audit trail",
+      "mismatch_id": "mis-title-fastfintech",
+      "resolution_decision": {
+        "action": "retain_profile",
+        "chosen_value": "Lead Backend Architect",
+        "user_justification": "Promoted to Lead Backend Architect in Q3 2023; canonical profile represents verified official title"
+      },
+      "expected_updated_title": "Lead Backend Architect",
+      "expected_audit_trail_recorded": true
+    },
+    {
+      "scenario_id": "perfect_consistency_aligned_profiles",
+      "description": "Resume, profile, and LinkedIn snapshot have perfectly aligned titles, dates, and core skills",
+      "master_profile_data": {
+        "user_id": "user-cand-101",
+        "experiences": [
+          {
+            "id": "exp-p1",
+            "company": "Acme Corp",
+            "title": "Principal Systems Engineer",
+            "start_date": "2020-01-01T00:00:00Z",
+            "end_date": null,
+            "current": true
+          }
+        ],
+        "skills": ["Go", "Kubernetes", "gRPC"]
+      },
+      "master_resume_data": {
+        "title": "Principal Systems Engineer",
+        "company": "Acme Corp",
+        "start_date": "2020-01-01T00:00:00Z",
+        "end_date": null,
+        "is_current": true,
+        "skills": ["Go", "Kubernetes", "gRPC"]
+      },
+      "linkedin_snapshot_data": {
+        "headline": "Principal Systems Engineer at Acme Corp",
+        "experiences": [
+          {
+            "id": "exp-li-1",
+            "company": "Acme Corp",
+            "title": "Principal Systems Engineer",
+            "start_date": "2020-01-01T00:00:00Z",
+            "end_date": null,
+            "current": true
+          }
+        ],
+        "skills": ["Go", "Kubernetes", "gRPC"]
+      },
+      "expected_mismatches_count": 0,
+      "expected_consistency_score": 100.0
+    }
+  ]
+}

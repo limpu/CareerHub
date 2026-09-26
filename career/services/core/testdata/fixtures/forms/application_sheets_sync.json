@@ -1,0 +1,238 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "clean_one_way_sync",
+      "description": "Standard one-way sync of application records into an empty or fresh Google Sheet projection (CAR-17, REQ-006).",
+      "config": {
+        "spreadsheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+        "sheet_name": "Job Applications",
+        "timezone": "UTC",
+        "sync_mode": "one_way_upsert",
+        "include_notes": true
+      },
+      "input_applications": [
+        {
+          "id": "app-rec-101",
+          "title": "Senior Cloud Platform Architect",
+          "company": "Workday Enterprise Partner",
+          "location": "New York, NY",
+          "portal_type": "workday_external",
+          "stage": "applied",
+          "is_verified_applied": true,
+          "applied_at": "2026-09-17T12:00:00Z",
+          "provider_reference": "WD-APP-101",
+          "verification_type": "user_attestation",
+          "notes": "Candidate manually confirmed completion after external Workday session."
+        },
+        {
+          "id": "app-rec-102",
+          "title": "Senior Distributed Systems Engineer",
+          "company": "Stripe",
+          "location": "San Francisco, CA (Remote)",
+          "portal_type": "greenhouse_direct",
+          "stage": "applied",
+          "is_verified_applied": true,
+          "applied_at": "2026-09-15T15:30:00Z",
+          "provider_reference": "STRIPE-GH-98412",
+          "verification_type": "provider_receipt",
+          "notes": "Automated Greenhouse receipt verified."
+        }
+      ],
+      "existing_sheet_rows": [],
+      "expected_rows_count": 3,
+      "expected_appended_count": 2,
+      "expected_updated_count": 0,
+      "expected_header": [
+        "Application ID",
+        "Job Title",
+        "Company",
+        "Location",
+        "Portal Type",
+        "Stage",
+        "Verified Applied",
+        "Applied At (UTC)",
+        "Provider Reference",
+        "Verification Type",
+        "Platform Notes"
+      ]
+    },
+    {
+      "scenario_id": "formula_injection_defense",
+      "description": "Verification that formula-like strings starting with =, +, -, @, \\t, \\r are safely escaped with single quote (AT-013).",
+      "config": {
+        "spreadsheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+        "sheet_name": "Job Applications",
+        "timezone": "UTC",
+        "sync_mode": "one_way_upsert",
+        "include_notes": true
+      },
+      "input_applications": [
+        {
+          "id": "app-malicious-01",
+          "title": "=cmd|'/C calc'!A0",
+          "company": "@Financecorp",
+          "location": "+Remote - North America",
+          "portal_type": "generic_external",
+          "stage": "applied",
+          "is_verified_applied": false,
+          "applied_at": "2026-09-17T10:00:00Z",
+          "provider_reference": "-REF-999",
+          "verification_type": "user_attestation",
+          "notes": "\t=2+5*cmd|' /C powershell'!"
+        }
+      ],
+      "existing_sheet_rows": [],
+      "expected_sanitized_cells": [
+        "'=cmd|'/C calc'!A0",
+        "'@Financecorp",
+        "'+Remote - North America",
+        "'-REF-999",
+        "'\t=2+5*cmd|' /C powershell'!"
+      ]
+    },
+    {
+      "scenario_id": "idempotent_sorted_reconciliation",
+      "description": "Asserts that syncing again after a candidate sorts or reorders rows updates in-place without creating duplicates (AT-014).",
+      "config": {
+        "spreadsheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+        "sheet_name": "Job Applications",
+        "timezone": "UTC",
+        "sync_mode": "one_way_upsert",
+        "include_notes": true
+      },
+      "input_applications": [
+        {
+          "id": "app-rec-101",
+          "title": "Senior Cloud Platform Architect",
+          "company": "Workday Enterprise Partner",
+          "location": "New York, NY",
+          "portal_type": "workday_external",
+          "stage": "interviewing",
+          "is_verified_applied": true,
+          "applied_at": "2026-09-17T12:00:00Z",
+          "provider_reference": "WD-APP-101",
+          "verification_type": "user_attestation",
+          "notes": "Stage progressed to interviewing."
+        },
+        {
+          "id": "app-rec-102",
+          "title": "Senior Distributed Systems Engineer",
+          "company": "Stripe",
+          "location": "San Francisco, CA (Remote)",
+          "portal_type": "greenhouse_direct",
+          "stage": "offered",
+          "is_verified_applied": true,
+          "applied_at": "2026-09-15T15:30:00Z",
+          "provider_reference": "STRIPE-GH-98412",
+          "verification_type": "provider_receipt",
+          "notes": "Offer letter received!"
+        }
+      ],
+      "existing_sheet_rows": [
+        [
+          "Application ID",
+          "Job Title",
+          "Company",
+          "Location",
+          "Portal Type",
+          "Stage",
+          "Verified Applied",
+          "Applied At (UTC)",
+          "Provider Reference",
+          "Verification Type",
+          "Platform Notes"
+        ],
+        [
+          "app-rec-102",
+          "Senior Distributed Systems Engineer",
+          "Stripe",
+          "San Francisco, CA (Remote)",
+          "greenhouse_direct",
+          "applied",
+          "TRUE",
+          "2026-09-15T15:30:00Z",
+          "STRIPE-GH-98412",
+          "provider_receipt",
+          "Automated Greenhouse receipt verified."
+        ],
+        [
+          "app-rec-101",
+          "Senior Cloud Platform Architect",
+          "Workday Enterprise Partner",
+          "New York, NY",
+          "workday_external",
+          "applied",
+          "TRUE",
+          "2026-09-17T12:00:00Z",
+          "WD-APP-101",
+          "user_attestation",
+          "Candidate manually confirmed."
+        ]
+      ],
+      "expected_rows_count": 3,
+      "expected_appended_count": 0,
+      "expected_updated_count": 2,
+      "expected_updated_stages": {
+        "app-rec-101": "interviewing",
+        "app-rec-102": "offered"
+      }
+    },
+    {
+      "scenario_id": "user_custom_notes_preservation",
+      "description": "Asserts that candidate custom columns (e.g. column L: Personal Recruiter Notes) remain intact upon sync update (AT-014).",
+      "config": {
+        "spreadsheet_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
+        "sheet_name": "Job Applications",
+        "timezone": "UTC",
+        "sync_mode": "one_way_upsert",
+        "include_notes": true
+      },
+      "input_applications": [
+        {
+          "id": "app-rec-101",
+          "title": "Senior Cloud Platform Architect",
+          "company": "Workday Enterprise Partner",
+          "location": "New York, NY",
+          "portal_type": "workday_external",
+          "stage": "interviewing",
+          "is_verified_applied": true,
+          "applied_at": "2026-09-17T12:00:00Z",
+          "provider_reference": "WD-APP-101",
+          "verification_type": "user_attestation",
+          "notes": "Updated stage."
+        }
+      ],
+      "existing_sheet_rows": [
+        [
+          "Application ID",
+          "Job Title",
+          "Company",
+          "Location",
+          "Portal Type",
+          "Stage",
+          "Verified Applied",
+          "Applied At (UTC)",
+          "Provider Reference",
+          "Verification Type",
+          "Platform Notes",
+          "Candidate Private Follow-Up Notes"
+        ],
+        [
+          "app-rec-101",
+          "Senior Cloud Platform Architect",
+          "Workday Enterprise Partner",
+          "New York, NY",
+          "workday_external",
+          "applied",
+          "TRUE",
+          "2026-09-17T12:00:00Z",
+          "WD-APP-101",
+          "user_attestation",
+          "Initial note",
+          "Spoke with recruiter Sarah on LinkedIn, scheduled deep dive for Monday."
+        ]
+      ],
+      "expected_preserved_custom_note": "Spoke with recruiter Sarah on LinkedIn, scheduled deep dive for Monday."
+    }
+  ]
+}

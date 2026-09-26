@@ -1,0 +1,84 @@
+{
+  "description": "Groundtruth evaluation fixtures for Application status, timeout reconciliation, and crash recovery (IMP-CAR-15, CAR-15, REQ-005, AT-005, AT-006, SRC-C2, SRC-C8)",
+  "scenarios": [
+    {
+      "id": "timed_out_external_session",
+      "name": "External Workday Portal - Timed Out Dispatch",
+      "description": "Candidate dispatched to Workday portal 15 minutes ago (timeout threshold 10 mins). Session must transition to needs_confirmation rather than applied.",
+      "session_id": "sess_timeout_001",
+      "job_id": "job_wd_lead_01",
+      "job_title": "Lead Infrastructure Architect",
+      "company": "Global Cloud Corp",
+      "portal_url": "https://globalcloud.wd5.myworkdayjobs.com/Careers/job/Lead-Architect_R-1092",
+      "initial_stage": "dispatched",
+      "dispatched_minutes_ago": 15,
+      "timeout_minutes": 10,
+      "expected_stage_after_check": "needs_confirmation",
+      "reconciliation_action": "confirm_applied",
+      "confirmation_receipt": {
+        "receipt_id": "rec_wd_1092_conf",
+        "provider_reference": "WD-APPL-998812",
+        "notes": "Submitted successfully via Workday candidate account."
+      },
+      "expected_final_stage": "applied"
+    },
+    {
+      "id": "provider_receipt_verified",
+      "name": "Direct ATS - Provider Submission Receipt",
+      "description": "Greenhouse direct ATS board returning explicit candidate submission receipt payload.",
+      "session_id": "sess_direct_gh_002",
+      "job_id": "job_gh_staff_02",
+      "job_title": "Staff Backend Engineer (Go)",
+      "company": "DataScale Systems",
+      "portal_url": "https://boards.greenhouse.io/datascale/jobs/4881023",
+      "initial_stage": "dispatched",
+      "dispatched_minutes_ago": 2,
+      "timeout_minutes": 10,
+      "expected_stage_after_check": "dispatched",
+      "reconciliation_action": "confirm_applied",
+      "confirmation_receipt": {
+        "receipt_id": "rec_gh_4881023_auto",
+        "provider_reference": "GH-CONF-4881023-APPL-01",
+        "notes": "Greenhouse webhook confirmed application receipt."
+      },
+      "expected_final_stage": "applied"
+    },
+    {
+      "id": "user_manual_attestation",
+      "name": "External Employer - Candidate Manual Attestation",
+      "description": "Candidate opened external portal and completed submission, confirming with attestation and confirmation code.",
+      "session_id": "sess_manual_attest_003",
+      "job_id": "job_taleo_sec_03",
+      "job_title": "Senior Security Engineer",
+      "company": "FinSecure Global",
+      "portal_url": "https://finsecure.taleo.net/careersection/2/jobdetail.ftl?job=SEC-99",
+      "initial_stage": "dispatched",
+      "dispatched_minutes_ago": 5,
+      "timeout_minutes": 10,
+      "expected_stage_after_check": "dispatched",
+      "reconciliation_action": "confirm_applied",
+      "confirmation_receipt": {
+        "receipt_id": "rec_attest_user_9912",
+        "notes": "Candidate completed form with confirmed facts. Received confirmation email."
+      },
+      "expected_final_stage": "applied"
+    },
+    {
+      "id": "crash_recovery_prevention",
+      "name": "Worker Crash Recovery - No Duplicate Apply (AT-006)",
+      "description": "Worker crashed after browser dispatch. Session remains in dispatched/needs_confirmation without duplicate re-submission.",
+      "session_id": "sess_crash_rec_004",
+      "job_id": "job_ashby_core_04",
+      "job_title": "Core Platform Engineer",
+      "company": "NextGen AI",
+      "portal_url": "https://jobs.ashbyhq.com/nextgen/8812-core-eng",
+      "initial_stage": "dispatched",
+      "dispatched_minutes_ago": 12,
+      "timeout_minutes": 10,
+      "simulated_worker_crash": true,
+      "expected_stage_after_check": "needs_confirmation",
+      "reconciliation_action": "retry_dispatch",
+      "expected_final_stage": "dispatched"
+    }
+  ]
+}

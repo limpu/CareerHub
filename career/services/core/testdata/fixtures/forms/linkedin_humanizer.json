@@ -1,0 +1,104 @@
+{
+  "scenarios": [
+    {
+      "scenario_id": "staff_architect_voice_profile",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "profile": {
+        "profile_id": "vp-staff-arch-001",
+        "workspace_id": "ws-alpha",
+        "tenant_id": "tenant-alpha",
+        "profile_name": "Staff Systems Architect Persona",
+        "target_audience": "Principal Engineers, Engineering VPs, Infrastructure Architects",
+        "formality": 4,
+        "technical_depth": 5,
+        "cadence_style": "balanced_rhythm",
+        "perspective": "first_person_singular",
+        "preferred_terms": [
+          "distributed systems",
+          "consensus",
+          "RFC",
+          "p99 latency",
+          "failover",
+          "idempotency",
+          "observability"
+        ],
+        "blacklisted_terms": [
+          "delve",
+          "testament",
+          "beacon",
+          "game changer",
+          "rockstar",
+          "revolutionary",
+          "synergy",
+          "paradigm shift",
+          "in today's fast-paced world"
+        ],
+        "approved_writing_samples": [
+          "Cutting 34 services down to a modular monolith reduced P99 latency from 280ms to 42ms.",
+          "Senior engineers solve hard problems; Staff engineers decide which problems are worth solving."
+        ],
+        "status": "approved",
+        "approval_token": "hmac-sha256:3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b",
+        "approved_by": "candidate-user-01"
+      }
+    },
+    {
+      "scenario_id": "multi_tier_deslop_transformation",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "voice_profile_id": "vp-staff-arch-001",
+      "input_text": "In today's fast-paced world, building distributed systems is a testament to engineering excellence. Let us delve into why microservices are a game changer. Furthermore, it is crucial to remember that synergy across teams serves as a beacon of modern DevOps.",
+      "expected_cleaned_text": "Building distributed systems requires engineering rigor. Microservices introduce complex operational trade-offs. Cross-team alignment remains an essential requirement for reliable infrastructure.",
+      "expected_slop_detected": [
+        "in today's fast-paced world",
+        "testament to",
+        "delve into",
+        "game changer",
+        "crucial to remember",
+        "synergy",
+        "beacon of"
+      ],
+      "expected_slop_score_before": 82,
+      "expected_slop_score_after": 4,
+      "expected_passed": true
+    },
+    {
+      "scenario_id": "invented_anecdote_violation",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "voice_profile_id": "vp-staff-arch-001",
+      "candidate_verified_facts": [
+        "Reduced AWS bill by 35% within 3 months",
+        "P99 latency improved from 280ms to 42ms",
+        "Authored 18 architectural RFCs"
+      ],
+      "input_text": "When I was 7 years old playing with Legos, I realized that architecture was my true calling. Yesterday an executive confided in me that our new platform yielded a 400% revenue surge within two weeks.",
+      "expected_blocking_issues": [
+        {
+          "code": "invented_personal_anecdote",
+          "severity": "blocking",
+          "snippet": "When I was 7 years old"
+        },
+        {
+          "code": "unverified_metric",
+          "severity": "blocking",
+          "snippet": "400%"
+        }
+      ],
+      "expected_passed": false
+    },
+    {
+      "scenario_id": "tamper_invalidation_and_multi_tenant",
+      "workspace_id": "ws-alpha",
+      "isolated_workspace_id": "ws-beta",
+      "tenant_id": "tenant-alpha",
+      "isolated_tenant_id": "tenant-beta",
+      "voice_profile_id": "vp-staff-arch-001",
+      "original_approved_text": "Cutting 34 services down to a modular monolith cut P99 latency from 280ms to 42ms.",
+      "original_approval_token": "hmac-sha256:7f8a9b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a",
+      "tampered_text": "Cutting 34 services down to a modular monolith cut P99 latency from 280ms to 42ms with guaranteed viral reach.",
+      "expected_tamper_invalidated": true
+    }
+  ]
+}

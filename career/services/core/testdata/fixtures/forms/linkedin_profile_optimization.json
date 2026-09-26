@@ -1,0 +1,140 @@
+{
+  "version": "1.0",
+  "domain": "linkedin_profile_optimization",
+  "description": "Groundtruth test fixture suite for LinkedIn profile optimization, before/after diffs, fact-grounding, and approval gating (IMP-LI-03, LI-03, REQ-004, AT-003, AT-007).",
+  "scenarios": [
+    {
+      "scenario_id": "software_engineer_infra",
+      "candidate_name": "Sarah Connor",
+      "target_role": "Staff Infrastructure Engineer",
+      "current_profile": {
+        "headline": "Software Engineer at Nexus Cloud",
+        "about": "Experienced backend developer working with cloud and systems.",
+        "experiences": [
+          {
+            "company_name": "Nexus Cloud",
+            "title": "Staff Systems Engineer",
+            "description": "Architected multi-region Kubernetes clusters with zero downtime.",
+            "skills_used": ["Kubernetes", "Go", "Docker"]
+          }
+        ],
+        "featured": "Link to personal blog.",
+        "skills": ["Go", "Kubernetes", "Docker", "Terraform", "PostgreSQL"]
+      },
+      "verified_source_facts": [
+        "10+ years experience in distributed cloud infrastructure",
+        "Zero-downtime multi-region Kubernetes architecture at Nexus Cloud",
+        "Certified Kubernetes Administrator (CKA)",
+        "Open source contributor to Go cloud native tooling"
+      ],
+      "expected_optimizations": [
+        {
+          "section": "headline",
+          "before": "Software Engineer at Nexus Cloud",
+          "after": "Staff Infrastructure Engineer @ Nexus Cloud | Distributed Systems, Kubernetes, Go | High-Availability Cloud Platforms",
+          "rationale": "Positions seniority and core technologies upfront to dramatically improve recruiter search indexing.",
+          "source_facts_used": [
+            "10+ years experience in distributed cloud infrastructure",
+            "Zero-downtime multi-region Kubernetes architecture at Nexus Cloud"
+          ],
+          "impact_score": 92
+        },
+        {
+          "section": "about",
+          "before": "Experienced backend developer working with cloud and systems.",
+          "after": "Distributed systems engineer with 10+ years architecting resilient, multi-region cloud platforms.\n\nAt Nexus Cloud, I lead infrastructure scaling with Kubernetes and Go, delivering zero-downtime architectures across tier-1 environments.\n\nCore Competencies:\n• Cloud Architecture: Kubernetes, Terraform, Multi-Region High Availability\n• Distributed Backends: Go, PostgreSQL, Event-Driven Architectures\n• Reliability: Chaos testing, zero-downtime migrations, automated recovery",
+          "rationale": "Structures value proposition into an engaging hook, measurable track record, and a scannable competency breakdown.",
+          "source_facts_used": [
+            "10+ years experience in distributed cloud infrastructure",
+            "Zero-downtime multi-region Kubernetes architecture at Nexus Cloud"
+          ],
+          "impact_score": 88
+        },
+        {
+          "section": "skills",
+          "before": "Go, Kubernetes, Docker, Terraform, PostgreSQL",
+          "after": "Kubernetes (Top Skill), Go (Top Skill), Distributed Systems, Multi-Region High Availability, Cloud Infrastructure, Docker, Terraform, PostgreSQL",
+          "rationale": "Elevates primary domain strengths into top 3 pinned skills and incorporates missing high-demand architectural keywords.",
+          "source_facts_used": [
+            "Zero-downtime multi-region Kubernetes architecture at Nexus Cloud",
+            "Certified Kubernetes Administrator (CKA)"
+          ],
+          "impact_score": 85
+        }
+      ]
+    },
+    {
+      "scenario_id": "data_platform_lead",
+      "candidate_name": "David Miller",
+      "target_role": "Lead Data Platform Engineer",
+      "current_profile": {
+        "headline": "Lead Data Engineer at FinScale",
+        "about": "Working with data pipelines and databases.",
+        "experiences": [
+          {
+            "company_name": "FinScale",
+            "title": "Lead Data Engineer",
+            "description": "Leading the data platform team handling 10 TB/day of transaction events.",
+            "skills_used": ["Apache Spark", "ClickHouse", "Python"]
+          }
+        ],
+        "featured": "",
+        "skills": ["Python", "Apache Spark", "ClickHouse", "SQL"]
+      },
+      "verified_source_facts": [
+        "Handles 10 TB/day transaction stream at FinScale",
+        "Built streaming ETL with Apache Flink and Delta Lake at Quantum Analytics",
+        "Master of Science in Computational Science from MIT"
+      ],
+      "expected_optimizations": [
+        {
+          "section": "headline",
+          "before": "Lead Data Engineer at FinScale",
+          "after": "Lead Data Platform Engineer @ FinScale | Real-Time Streaming (10 TB/Day), Spark, ClickHouse, Flink | MIT Computational Science",
+          "rationale": "Quantifies scale (10 TB/day) directly in the headline and highlights premier academic credential.",
+          "source_facts_used": [
+            "Handles 10 TB/day transaction stream at FinScale",
+            "Master of Science in Computational Science from MIT"
+          ],
+          "impact_score": 94
+        }
+      ]
+    },
+    {
+      "scenario_id": "product_designer_portfolio",
+      "candidate_name": "Elena Rostova",
+      "target_role": "Principal Reliability Architect",
+      "current_profile": {
+        "headline": "Reliability Architect",
+        "about": "SRE architect focused on chaos engineering and financial payment rail uptime.",
+        "experiences": [
+          {
+            "company_name": "GlobalBank",
+            "title": "Principal Site Reliability Architect",
+            "description": "Leading 99.999% tier-1 payment core reliability.",
+            "skills_used": ["Chaos Engineering", "Linux", "Kubernetes"]
+          }
+        ],
+        "featured": "",
+        "skills": ["SRE", "Chaos Engineering", "Linux"]
+      },
+      "verified_source_facts": [
+        "99.999% payment core uptime at GlobalBank",
+        "Automated incident response runbooks at CloudGuard Systems",
+        "Master of Engineering from University of Cambridge"
+      ],
+      "expected_optimizations": [
+        {
+          "section": "headline",
+          "before": "Reliability Architect",
+          "after": "Principal Reliability Architect @ GlobalBank | 99.999% Tier-1 Payment Core Uptime | SRE & Chaos Engineering",
+          "rationale": "Emphasizes the critical 5-nines reliability benchmark in financial payment infrastructure.",
+          "source_facts_used": [
+            "99.999% payment core uptime at GlobalBank"
+          ],
+          "impact_score": 90
+        }
+      ]
+    }
+  ]
+}

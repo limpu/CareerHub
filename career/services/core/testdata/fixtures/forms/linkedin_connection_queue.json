@@ -1,0 +1,87 @@
+{
+  "description": "Groundtruth fixture suite for IMP-LI-07: Connection note drafts, daily/rolling-week budgets, recipient deduplication, immutable approval gatekeeper, and truth-in-advertising manual fallback (LI-07, AT-007, AT-010, FND-010, FND-011, SRC-L1)",
+  "version": "1.0.0",
+  "workspace_budgets": {
+    "ws-alpha": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "daily_limit": 20,
+      "daily_used": 2,
+      "weekly_limit": 80,
+      "weekly_used": 14,
+      "last_reset_date": "2026-03-20T00:00:00Z"
+    },
+    "ws-beta": {
+      "workspace_id": "ws-beta",
+      "tenant_id": "tenant-beta",
+      "daily_limit": 20,
+      "daily_used": 20,
+      "weekly_limit": 80,
+      "weekly_used": 80,
+      "last_reset_date": "2026-03-20T00:00:00Z"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scenario-01-standard-approval-lifecycle",
+      "name": "Standard Note Drafting and Cryptographic Approval Gatekeeper",
+      "description": "Generates a personalized note under 300 characters, registers approval with HMAC token, decrements remaining budget, and copies note with native LinkedIn profile link.",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "recipient": {
+        "recipient_id": "rec-p-01",
+        "recipient_name": "Sarah Chen",
+        "recipient_title": "Lead Systems Architect",
+        "recipient_company": "CloudScale Systems",
+        "recipient_linkedin_url": "https://www.linkedin.com/in/sarah-chen-arch"
+      },
+      "candidate": {
+        "candidate_name": "Alex Chen",
+        "target_role": "Principal Infrastructure Architect",
+        "key_overlap": "Distributed Systems, Go, Kubernetes"
+      },
+      "expected_draft": {
+        "max_characters": 300,
+        "required_mention": "CloudScale Systems",
+        "status": "pending_approval"
+      }
+    },
+    {
+      "id": "scenario-02-recipient-deduplication",
+      "name": "Recipient Deduplication Rejection (AT-007, AT-004)",
+      "description": "Rejects queueing a duplicate note to an already existing recipient profile URL within active or completed queue states.",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "existing_item": {
+        "id": "cq-item-existing-01",
+        "recipient_linkedin_url": "https://www.linkedin.com/in/marcus-vance-talent",
+        "status": "approved"
+      },
+      "duplicate_attempt": {
+        "recipient_name": "Marcus Vance",
+        "recipient_linkedin_url": "https://www.linkedin.com/in/marcus-vance-talent"
+      },
+      "expected_error": "recipient already queued or contacted; duplicate outreach rejected"
+    },
+    {
+      "id": "scenario-03-budget-exhaustion-throttling",
+      "name": "Daily and Rolling-Week Budget Exhaustion Throttling (FND-011, AT-008, SRC-L1)",
+      "description": "Fails closed when daily or rolling-week safe quota is exhausted to prevent LinkedIn bot flag or suspension.",
+      "workspace_id": "ws-beta",
+      "tenant_id": "tenant-beta",
+      "daily_limit": 20,
+      "daily_used": 20,
+      "expected_error": "daily connection invite budget exhausted; throttling active for account safety"
+    },
+    {
+      "id": "scenario-04-tamper-invalidation",
+      "name": "Approval Tamper Invalidation (FND-010, AT-007)",
+      "description": "Modifying approved note text invalidates previous approval token, resetting status back to pending_approval.",
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "approved_item_id": "cq-item-tamper-01",
+      "original_text": "Hi David, saw your engineering post at CloudScale Systems and would love to connect.",
+      "tampered_text": "Hi David, buy our crypto product immediately!"
+    }
+  ]
+}

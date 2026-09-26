@@ -1,0 +1,116 @@
+{
+  "scenario_title": "LinkedIn Recruiter & Hiring Lead Workspace Multi-Tenant Fixture Suite",
+  "version": "1.0",
+  "generated_date": "2026-09-20",
+  "description": "Multi-workspace groundtruth recruiter leads, notes, reminders, and related job applications under strict tenant isolation (AT-011, LI-06)",
+  "workspaces": [
+    {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "leads": [
+        {
+          "id": "lead-alpha-001",
+          "workspace_id": "ws-alpha",
+          "tenant_id": "tenant-alpha",
+          "recruiter_name": "Marcus Vance",
+          "recruiter_title": "Principal Talent Acquisition Partner",
+          "company": "Stripe",
+          "linkedin_url": "https://www.linkedin.com/in/marcus-vance-talent",
+          "source_entity_type": "person_record",
+          "source_entity_id": "person-alpha-001",
+          "status": "in_dialogue",
+          "outreach_stage": "replied",
+          "related_job_id": "job-alpha-001",
+          "related_application_id": "app-alpha-stripe-staff",
+          "notes": [
+            {
+              "id": "note-001",
+              "author": "user-alpha",
+              "content": "Had initial introductory chat regarding Staff Infrastructure role. He emphasized distributed systems background.",
+              "created_at": "2026-09-18T14:30:00Z"
+            },
+            {
+              "id": "note-002",
+              "author": "user-alpha",
+              "content": "Sent updated tailored resume and open-source contributions portfolio link.",
+              "created_at": "2026-09-19T10:15:00Z"
+            }
+          ],
+          "reminder": {
+            "due_date": "2026-09-22T09:00:00Z",
+            "message": "Follow up on technical screen scheduling with Marcus",
+            "status": "pending"
+          },
+          "created_at": "2026-09-18T14:00:00Z",
+          "updated_at": "2026-09-19T10:15:00Z"
+        },
+        {
+          "id": "lead-alpha-002",
+          "workspace_id": "ws-alpha",
+          "tenant_id": "tenant-alpha",
+          "recruiter_name": "Elena Rostova",
+          "recruiter_title": "Director of Engineering",
+          "company": "Cloudflare",
+          "linkedin_url": "https://www.linkedin.com/in/elena-rostova-tech",
+          "source_entity_type": "post_record",
+          "source_entity_id": "post-alpha-002",
+          "status": "new",
+          "outreach_stage": "draft",
+          "related_job_id": "job-alpha-002",
+          "related_application_id": "",
+          "notes": [
+            {
+              "id": "note-003",
+              "author": "user-alpha",
+              "content": "Posted hiring call for Rust / Go edge networking engineers. Drafted connection note highlighting Envoy and eBPF experience.",
+              "created_at": "2026-09-19T16:00:00Z"
+            }
+          ],
+          "reminder": {
+            "due_date": "2026-09-21T11:00:00Z",
+            "message": "Review and send personalized connection note on LinkedIn",
+            "status": "pending"
+          },
+          "created_at": "2026-09-19T15:50:00Z",
+          "updated_at": "2026-09-19T16:00:00Z"
+        }
+      ]
+    },
+    {
+      "workspace_id": "ws-beta",
+      "tenant_id": "tenant-beta",
+      "leads": [
+        {
+          "id": "lead-beta-001",
+          "workspace_id": "ws-beta",
+          "tenant_id": "tenant-beta",
+          "recruiter_name": "Sophia Lin",
+          "recruiter_title": "Head of People & Recruiting",
+          "company": "Datadog",
+          "linkedin_url": "https://www.linkedin.com/in/sophia-lin-recruiter",
+          "source_entity_type": "person_record",
+          "source_entity_id": "person-beta-001",
+          "status": "contacted",
+          "outreach_stage": "contacted",
+          "related_job_id": "job-beta-001",
+          "related_application_id": "app-beta-datadog-sre",
+          "notes": [
+            {
+              "id": "note-beta-001",
+              "author": "user-beta",
+              "content": "Connected via LinkedIn. She confirmed receipt of application for Site Reliability Lead.",
+              "created_at": "2026-09-17T11:00:00Z"
+            }
+          ],
+          "reminder": {
+            "due_date": "2026-09-24T15:00:00Z",
+            "message": "Check status on hiring manager review",
+            "status": "pending"
+          },
+          "created_at": "2026-09-17T10:45:00Z",
+          "updated_at": "2026-09-17T11:00:00Z"
+        }
+      ]
+    }
+  ]
+}

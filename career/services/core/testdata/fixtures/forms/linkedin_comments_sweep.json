@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LinkedInCommentsSweepFixture",
+  "description": "Groundtruth test fixtures for LinkedIn post thread sweep, contextual comment/reply drafting without generic spam, cryptographic HMAC approval, cross-tenant isolation, and AT-010 fail-closed bulk auto-engagement blocking",
+  "scenarios": {
+    "technical_post_comment_drafting": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "target_post": {
+        "post_id": "post-sweep-001",
+        "author_name": "Dr. Martin Kleppmann",
+        "author_headline": "Associate Professor in Distributed Systems at University of Cambridge",
+        "author_company": "University of Cambridge",
+        "post_url": "https://www.linkedin.com/feed/update/urn:li:activity:7189000000000000001",
+        "content": "Why distributed consensus algorithms like Raft and Paxos can suffer from silent leader partition stalls during asymmetric network partitions, and how randomized heartbeats help mitigate them.",
+        "category": "technical_discussion",
+        "existing_comments_count": 24
+      },
+      "candidate_facts": [
+        "Architected multi-region consensus layer across 5 continents",
+        "Experienced in Raft split-brain resilience and Paxos lease management"
+      ],
+      "expected_angles": [
+        "insightful_addition",
+        "engaging_question",
+        "supportive_perspective"
+      ],
+      "forbidden_generic_phrases": [
+        "Great post!",
+        "Thanks for sharing!",
+        "Totally agree 100%",
+        "Insightful read!"
+      ],
+      "requires_approval": true,
+      "requires_one_click_copy": true
+    },
+    "hiring_announcement_thread_reply": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "target_post": {
+        "post_id": "post-sweep-002",
+        "author_name": "Elena Rostova",
+        "author_headline": "VP of Infrastructure Engineering at CloudScale",
+        "author_company": "CloudScale Systems",
+        "post_url": "https://www.linkedin.com/feed/update/urn:li:activity:7189000000000000002",
+        "content": "We are expanding our Core Platform team at CloudScale! Looking for Principal Engineers with Kubernetes, high-throughput Golang, and event-driven streaming background. Feel free to comment or DM.",
+        "category": "hiring_announcement",
+        "existing_comments_count": 12
+      },
+      "candidate_facts": [
+        "10+ years backend infrastructure scaling to 10M RPS",
+        "Extensive experience in Go, Kafka, and Kubernetes"
+      ],
+      "expected_angle": "insightful_addition",
+      "expected_content_snippet": "CloudScale",
+      "requires_approval": true
+    },
+    "bulk_auto_engagement_fail_closed": {
+      "workspace_id": "ws-alpha",
+      "tenant_id": "tenant-alpha",
+      "attempted_mode": "bulk_auto_comment",
+      "expected_error": "comments: autonomous bulk auto-engagement and unreviewed commenting permanently barred under platform integrity policy (AT-010, REQ-015, LI-10)"
+    },
+    "cross_tenant_sweep_isolation": {
+      "alpha_sweep": {
+        "sweep_id": "swp-alpha-001",
+        "workspace_id": "ws-alpha",
+        "tenant_id": "tenant-alpha",
+        "post_id": "post-sweep-001"
+      },
+      "beta_query": {
+        "workspace_id": "ws-beta",
+        "tenant_id": "tenant-beta"
+      },
+      "expected_isolation_error": "records: cross-tenant access strictly denied (AT-012)"
+    }
+  }
+}
