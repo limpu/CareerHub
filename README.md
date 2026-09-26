@@ -1,14 +1,24 @@
 # 🚀 CareerHub — Autonomous AI Career Suite & Safe LinkedIn Networking Platform
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.1-black?style=flat&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-v4-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
-[![Go](https://img.shields.io/badge/Go-1.24-00ADD8?style=flat&logo=go)](https://golang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![Security: Strict Human-in-the-Loop](https://img.shields.io/badge/Security-Strict%20Human--in--the--Loop-emerald)](./SECURITY.md)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+<p align="center">
+  <img src="./assets/hero-banner.svg" alt="CareerHub Hero Banner" width="100%" />
+</p>
+
+<p align="center">
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15.1-black?style=flat&logo=next.js" alt="Next.js" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.8-blue?style=flat&logo=typescript" alt="TypeScript" /></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/TailwindCSS-v4-38bdf8?style=flat&logo=tailwind-css" alt="Tailwind CSS" /></a>
+  <a href="https://golang.org/"><img src="https://img.shields.io/badge/Go-1.24-00ADD8?style=flat&logo=go" alt="Go" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" /></a>
+  <a href="./SECURITY.md"><img src="https://img.shields.io/badge/Security-Strict%20Human--in--the--Loop-emerald" alt="Security" /></a>
+  <a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
+</p>
 
 **CareerHub** is an open-source, privacy-first career acceleration platform and relationship-first LinkedIn networking suite. It unites real-time multi-board job discovery, zero-hallucination profile modeling, deterministic ATS resume tailoring with a guaranteed single-page layout, and authentic LinkedIn relationship management into a single modern dashboard.
+
+<p align="center">
+  <img src="./assets/screenshots/dashboard.png" alt="CareerHub Command Center Dashboard" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+</p>
 
 Unlike standard "AI resume wrappers" that blindly hallucinate achievements or run dangerous scraping scripts that endanger your LinkedIn account, CareerHub is built upon a **Strict Human-in-the-Loop (HITL)** architecture with deterministic safeguards, cost-aware AI gateway budgeting, and zero unauthorized DOM scraping.
 
@@ -71,6 +81,10 @@ Unlike standard "AI resume wrappers" that blindly hallucinate achievements or ru
 ### 1. Canonical Profile & Master Fact Vault
 > **Route:** `/career/profile`
 
+<p align="center">
+  <img src="./assets/screenshots/profile.png" alt="Canonical Profile & Master Fact Vault" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+</p>
+
 The foundation of CareerHub is your **Canonical Profile**—a single source of truth containing your complete employment history, achievements, verified skills, degrees, and publications.
 
 - **Functionality**:
@@ -88,6 +102,10 @@ The foundation of CareerHub is your **Canonical Profile**—a single source of t
 ### 2. Multi-Board Job Discovery Engine
 > **Route:** `/career/discovery`
 
+<p align="center">
+  <img src="./assets/screenshots/discovery.png" alt="Multi-Board Job Discovery Engine" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+</p>
+
 A unified search and filtering command center that tracks real-time openings from major engineering job boards (Greenhouse, Lever, Ashby, Indeed).
 
 - **Functionality**:
@@ -103,6 +121,10 @@ A unified search and filtering command center that tracks real-time openings fro
 
 ### 3. Real-Time Resume & Cover Letter Tailor Studio
 > **Route:** `/career/tailor`
+
+<p align="center">
+  <img src="./assets/screenshots/tailor.png" alt="Real-Time Resume & Cover Letter Tailor Studio" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+</p>
 
 The core conversion engine of CareerHub. It aligns your canonical background against a target job description to maximize ATS visibility while maintaining complete factual integrity.
 
@@ -121,6 +143,10 @@ The core conversion engine of CareerHub. It aligns your canonical background aga
 
 ### 4. Safe LinkedIn Strategy & Networking Studio
 > **Route:** `/linkedin`
+
+<p align="center">
+  <img src="./assets/screenshots/linkedin.png" alt="Safe LinkedIn Strategy & Networking Studio" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+</p>
 
 A professional networking command center built around authentic relationship building, structured into 4 dedicated pillars:
 
